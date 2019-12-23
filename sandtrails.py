@@ -1,6 +1,8 @@
 from time import sleep
 from math import pi
 import RPi.GPIO as GPIO
+import logging
+import sys
 
 # Theta Axis
 TH_DIR = 5               # Direction GPIO Pin
@@ -46,25 +48,24 @@ def setup_steppermotors():
 
     
 class axis:
-    def __init__(self, axistype, llimit, ulimit):
+    def __init__(self, axistype, axis_min, axis_max):
         self.axistype = axistype  # from dictionary AXISTYPE
-        self.llimit = llimit      # lower limit  [in rad or mm]
-        self.ulimit = ulimit      # upper limit [in rad or mm]
+        self.axis_min = axis_min  # lower limit  [in rad or mm]
+        self.axis_max = axis_max  # upper limit [in rad or mm]
         self.curSteps = 0         # current position [in steps]
         self.curPos = 0           # current position [in rad or mm]
         self.tarSteps = 0         # target position [in steps]
         self.tarPos = 0           # target position [im rad or mm]
         self.homed = False        # turns True once homed
+        if self.axistype == AXISTYPE['Theta']:
+            self.axisname = "Theta"
+        elif self.axistype == AXISTYPE['Rho']:
+            self.axisname = "Rho"        
+        else:
+            logging.error("Unknown axis type (should never happen)")
     
     def printState(self):
-        if self.axistype == AXISTYPE['Theta']:
-            mytype = "Theta"
-        elif self.axistype == AXISTYPE['Rho']:
-            mytype = "Rho"        
-        else:
-            print("Unknown axis type (should never happen)")
-            return -1
-        print(mytype + ": (" + str(self.curSteps) + ", " + str(self.curPos) + ", " + str(self.tarSteps) + ", " + str(self.tarPos) + ") (curSteps, curPos, tarSteps, tarPos)")
+        logging.info(self.axisname + ": (" + str(self.curSteps) + ", " + str(self.curPos) + ", " + str(self.tarSteps) + ", " + str(self.tarPos) + ") (curSteps, curPos, tarSteps, tarPos)")
         return 0
         
     def homing(self):
@@ -74,21 +75,20 @@ class axis:
         
     def goTo(self, dest):    # destination position [in rad or mm]
         if not self.homed:
-            print("Not homed!")
+            logging.error(self.axisname + " not homed!")
             return -1
-        elif (dest < self.llimit) or (dest > self.ulimit):
-            print("target violates limits")
+        elif (dest < self.axis_min) or (dest > self.axis_max):
+            logging.error(self.axisname + " target violates limits")
             return -1
         else:
-            self.tarPos = dest
+            self.tarPos = round(dest, 4)
             if self.tarPos == self.curPos:
-                print("Already at target position " + str(self.tarPos))
+                logging.info(self.axisname + " already at target position " + str(self.tarPos))
                 return 0
             else:
-                #print("target: " + str(self.tarPos))
                 if self.axistype == AXISTYPE['Rho']:
                     self.tarSteps = round(self.tarPos * SPR / (pi*RH_D))
-                    #print("target: " + str(self.tarSteps) + " [steps]")
+                    logging.info(self.axisname + " target = " + str(self.tarPos) + "[mm]   " + str(self.tarSteps) + " [steps]")
                     for x in range(abs(self.tarSteps - self.curSteps)):
                         if self.curSteps < self.tarSteps:
                             GPIO.output(RH_DIR, CW)
@@ -104,10 +104,10 @@ class axis:
                             GPIO.output(RH_STEP, GPIO.LOW)
                             sleep(RH_DELAY)
                             self.curSteps -= 1
-                        self.curPos = self.curSteps * pi * RH_D / SPR
+                        self.curPos = round(self.curSteps * pi * RH_D / SPR, 4)
                 elif self.axistype == AXISTYPE['Theta']:
                     self.tarSteps = round(self.tarPos * SPR / (2*pi) / TH_GEAR)    # SPR is steps for 2*pi
-                    #print("target: " + str(self.tarSteps) + " [steps]")
+                    logging.info(self.axisname + " target = " + str(self.tarPos) + "[rad]   " + str(self.tarSteps) + " [steps]")
                     for x in range(abs(self.tarSteps - self.curSteps)):
                         if self.curSteps < self.tarSteps:
                             GPIO.output(TH_DIR, CW)
@@ -123,52 +123,65 @@ class axis:
                             GPIO.output(TH_STEP, GPIO.LOW)
                             sleep(TH_DELAY)
                             self.curSteps -= 1
-                        self.curPos = self.curSteps * 2 * pi / SPR * TH_GEAR
+                        self.curPos = round(self.curSteps * 2 * pi / SPR * TH_GEAR, 4)
                 else:
-                    print("Unknown axis type (should never happen)")
+                    logging.error("Unknown axis type (should never happen)")
                     return -1
                 self.printState()    
                 return 0
-        
-    
-try:
-    setup_steppermotors()
-    
-    rho = axis(AXISTYPE['Rho'], -5, 100)
-    theta = axis(AXISTYPE['Theta'], -0.1*pi, 2.1*pi)
-    rho.printState()
-    rho.homing()
-    theta.homing()
-    
-    rho.goTo(20)
-    rho.printState()
-    theta.goTo(1/4*pi)
-    theta.printState()
-    sleep(2)
-    
-    rho.goTo(80)
-    rho.printState()
-    theta.goTo(2/4*pi)
-    theta.printState()
-    sleep(2)
-    
-    theta.goTo(0)
-    theta.printState()
-    rho.goTo(10)
-    rho.printState()
-    print("Main loop done")
-    
-except:
-    print("Exception occured!")
-finally:
-    # shut down cleanly
-    try: # drive axes to zero
-        rho.goTo(0)
+
+def main():
+    logging.info("Starting sandtrails ")
+    try:
+        setup_steppermotors()
+       
+        logging.info("Steppermotor set up") 
+        rho = axis(AXISTYPE['Rho'], -5, 100)
+        theta = axis(AXISTYPE['Theta'], -0.1*pi, 2.1*pi)
         rho.printState()
+        rho.homing()
+        theta.homing()
+    
+        rho.goTo(40)
+        rho.printState()
+        theta.goTo(1/8*pi)
+        theta.printState()
+        sleep(2)
+    
+        """
+        rho.goTo(80)
+        rho.printState()
+        theta.goTo(3/4*pi)
+        theta.printState()
+        sleep(2)
+    
         theta.goTo(0)
         theta.printState()
-    except:
-        print("Could not drive axes back to zero. Careful on next run, might hit physical limits")
+        rho.goTo(10)
+        rho.printState()
+        """
+        logging.info("Main loop done")
+    
+    except Exception as error:
+        logging.error("Exception occured: " + str(error))
     finally:
-        GPIO.cleanup()
-        print("GPIO cleanup performed")
+        # shut down cleanly
+        try: # drive axes to zero
+            logging.info("Going back home")
+            rho.goTo(0)
+            rho.printState()
+            theta.goTo(0)
+            theta.printState()
+        except:
+            logging.error("Could not drive axes back to zero. Careful on next run, might hit physical limits")
+        finally:
+            GPIO.cleanup()
+            logging.info("GPIO cleanup performed")
+
+if __name__ == '__main__':
+    #logging.basicConfig(filename='sandtrails.log', level=logging.INFO, format='%(levelname)s: %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    if sys.version_info[0] < 3:
+        logging.critical("Must be using Python 3")
+    else:
+        main()
