@@ -63,9 +63,9 @@ class axis:
         else:
             logging.error("Unknown axis type (should never happen)")
     
-    def printState(self):
-        logging.info(self.axisname + ": (" + str(self.curSteps) + ", " + str(self.curPos) + ", " + str(self.tarSteps) + ", " + str(self.tarPos) + ") (curSteps, curPos, tarSteps, tarPos)")
-        return 0
+    def state(self):
+        state_str = self.axisname + ": (" + str(self.curSteps) + ", " + str(self.curPos) + ", " + str(self.tarSteps) + ", " + str(self.tarPos) + ") (curSteps, curPos, tarSteps, tarPos)"
+        return state_str
         
     def homing(self):
         # Drive until we see the homing switch. Not implemented yet.
@@ -73,7 +73,7 @@ class axis:
         self.homed = True
         
     def goTo(self, dest):    # destination position [in rad or mm]
-        logging.info(self.axisname + " goTo: " + str(dest))
+        logging.debug(self.axisname + " goTo: " + str(dest))
         if not self.homed:
             logging.error(self.axisname + " not homed!")
             return -1
@@ -88,7 +88,7 @@ class axis:
             else:
                 if self.axistype == AXISTYPE['Rho']:
                     self.tarSteps = round(self.tarPos * SPR / (math.pi*RH_D))
-                    logging.info(self.axisname + " target = " + str(self.tarPos) + "[mm]   " + str(self.tarSteps) + " [steps]")
+                    logging.debug(self.axisname + " target = " + str(self.tarPos) + "[mm]   " + str(self.tarSteps) + " [steps]")
                     for x in range(abs(self.tarSteps - self.curSteps)):
                         if self.curSteps < self.tarSteps:
                             GPIO.output(RH_DIR, CW)
@@ -107,7 +107,7 @@ class axis:
                         self.curPos = round(self.curSteps * math.pi * RH_D / SPR, 4)
                 elif self.axistype == AXISTYPE['Theta']:
                     self.tarSteps = round(self.tarPos * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
-                    logging.info(self.axisname + " target = " + str(self.tarPos) + "[rad]   " + str(self.tarSteps) + " [steps]")
+                    logging.debug(self.axisname + " target = " + str(self.tarPos) + "[rad]   " + str(self.tarSteps) + " [steps]")
                     for x in range(abs(self.tarSteps - self.curSteps)):
                         if self.curSteps < self.tarSteps:
                             GPIO.output(TH_DIR, CW)
@@ -127,9 +127,12 @@ class axis:
                 else:
                     logging.error("Unknown axis type (should never happen)")
                     return -1
-                self.printState()    
+                logging.debug(self.state())
                 return 0
 
-    def stripTheta():	# strip the theta axis of its rotations
-        self.curPos = self.curPos % math.pi
-        #todo : adjust curSteps
+    def stripTheta(self):   # strip the theta axis of its rotations
+        if self.axistype == AXISTYPE['Theta']:
+            logging.info("Before stripping 2*pi: " + self.state())
+            self.curPos = self.curPos % (2*math.pi)
+            self.curSteps = round(self.curPos * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
+            logging.info("After stripping 2*pi: " + self.state())

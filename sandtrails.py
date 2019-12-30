@@ -32,17 +32,24 @@ def main():
         theta = axes.axis(axes.AXISTYPE['Theta'], THETA_MIN, THETA_MAX)
         rho.homing()
         theta.homing()
-    
+        
         thr_coord = []
-        thr_coord = parse_thr("spirale-2019-12-27.thr")
-
+        #thr_coord = parse_thr("spirale-2019-12-27.thr")
+        thr_coord = parse_thr("square-2019-12-30.thr")
+        index = 1
+        
         for coord in thr_coord:
-            logging.info("Go to " + str(coord[0]) + " " + str(coord[1]))
+            logging.info("Go to " + str(coord[0]) + " " + str(coord[1]) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
+            logging.info(str(float(coord[1])*RHO_MAX))
             rho.goTo(float(coord[1])*RHO_MAX)
+            sleep(0.001)
             theta.goTo(float(coord[0]))
-            sleep(0.002)
-
-
+            sleep(0.001)
+            index += 1
+        logging.info("Pattern done!")
+        sleep(1)
+        theta.stripTheta()
+        
         logging.info("Main loop done")
     
     except Exception as error:
@@ -52,9 +59,7 @@ def main():
         try: # drive axes to zero
             logging.info("Going back home")
             rho.goTo(0)
-            rho.printState()
             theta.goTo(0)
-            theta.printState()
         except:
             logging.error("Could not drive axes back to zero. Careful on next run, might hit physical limits")
         finally:
