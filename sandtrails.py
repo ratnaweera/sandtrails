@@ -1,8 +1,26 @@
 import axes
 from time import sleep
-from math import pi
-import logging
+import math
+import logging          # for debug messages
 import sys
+import csv
+
+RHO_MAX = 180
+RHO_MIN = -5
+THETA_MAX = math.inf
+THETA_MIN = -math.inf
+
+def parse_thr(thrfilename):
+    logging.info("Parsing file: " + thrfilename)
+    tmp_coord = []
+    with open(thrfilename) as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=' ')
+        for row in readCSV:
+            if row:
+                if row[0] != "#":
+                    tmp_coord.append([row[0] , row[1]]) 
+    logging.info("Parsing completed")
+    return(tmp_coord)
 
 def main():
     logging.info("Starting sandtrails ")
@@ -10,30 +28,21 @@ def main():
         axes.setup_steppermotors()
        
         logging.info("Steppermotor set up") 
-        rho = axes.axis(axes.AXISTYPE['Rho'], -5, 100)
-        theta = axes.axis(axes.AXISTYPE['Theta'], -0.1*pi, 2.1*pi)
-        rho.printState()
+        rho = axes.axis(axes.AXISTYPE['Rho'], RHO_MIN, RHO_MAX)
+        theta = axes.axis(axes.AXISTYPE['Theta'], THETA_MIN, THETA_MAX)
         rho.homing()
         theta.homing()
     
-        rho.goTo(40)
-        rho.printState()
-        theta.goTo(1/8*pi)
-        theta.printState()
-        sleep(2)
-    
-        """
-        rho.goTo(80)
-        rho.printState()
-        theta.goTo(3/4*pi)
-        theta.printState()
-        sleep(2)
-    
-        theta.goTo(0)
-        theta.printState()
-        rho.goTo(10)
-        rho.printState()
-        """
+        thr_coord = []
+        thr_coord = parse_thr("spirale-2019-12-27.thr")
+
+        for coord in thr_coord:
+            logging.info("Go to " + str(coord[0]) + " " + str(coord[1]))
+            rho.goTo(float(coord[1])*RHO_MAX)
+            theta.goTo(float(coord[0]))
+            sleep(0.002)
+
+
         logging.info("Main loop done")
     
     except Exception as error:
