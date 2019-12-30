@@ -89,14 +89,8 @@ class thetarho:
                 logging.debug("Rho target = " + str(self.tarPos[1]) + "[mm] " + str(self.tarSteps[1]) + "[steps]")
 
                 deltaSteps = [(self.tarSteps[0] - self.curSteps[0]), (self.tarSteps[1] - self.curSteps[1])]
-                
-                if abs(deltaSteps[0]) < abs(deltaSteps[1]):
-                    logging.error("Unhandled case where steps in theta are less than those in rho. Exiting")
-                    return -1
-                
-                # Calculate how after how many theta iterations the rho axis is to be moved
-                factorial = math.floor(deltaSteps[0] / deltaSteps[1])
-                
+                logging.debug("DeltaSteps: " + str(deltaSteps) + " (loop 1)")
+
                 if deltaSteps[0] > 0:   # Differentiate rotation direction based on deltaSteps
                     GPIO.output(TH_DIR, CW)
                 else:
@@ -106,44 +100,75 @@ class thetarho:
                 else:
                     GPIO.output(RH_DIR, CCW)
                 sleep(TH_DELAY)         # Give output time to set. Unsure if necessary
-                    
-                for x in range(abs(deltaSteps[0])):
-                    GPIO.output(TH_STEP, GPIO.HIGH)
-                    if (x % factorial == 0):
+
+                if abs(deltaSteps[0]) >= abs(deltaSteps[1]):    # More steps in THETA than there are in RHO
+                    # Calculate how after how many THETA iterations the RHO axis is to be moved
+                    if deltaSteps[1] != 0:
+                        factorial = math.floor(deltaSteps[0] / deltaSteps[1])
+                    else:
+                        factorial = math.inf
+                        
+                    for x in range(abs(deltaSteps[0])):
+                        GPIO.output(TH_STEP, GPIO.HIGH)
+                        if (x % factorial == 0):
+                            GPIO.output(RH_STEP, GPIO.HIGH)
+                        sleep(TH_DELAY)
+                        GPIO.output(TH_STEP, GPIO.LOW)
+                        if (x % factorial == 0):
+                            GPIO.output(RH_STEP, GPIO.LOW)
+                        sleep(TH_DELAY)
+                        self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
+                        if (x % factorial == 0):
+                            self.curSteps[1] = self.curSteps[1] + int(sign(deltaSteps[1])) # inrecement or decrement based on direction
+                        self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, 4)
+                        self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), 4)
+                else:  # More steps in RHO than there are in THETA
+                        # Calculate how after how many RHO iterations the THETA axis is to be moved
+                    if deltaSteps[0] != 0:
+                        factorial = math.floor(deltaSteps[1] / deltaSteps[0])
+                    else:
+                        factorial = math.inf
+                        
+                    for x in range(abs(deltaSteps[1])):
                         GPIO.output(RH_STEP, GPIO.HIGH)
-                    sleep(TH_DELAY)
-                    GPIO.output(TH_STEP, GPIO.LOW)
-                    if (x % factorial == 0):
+                        if (x % factorial == 0):
+                            GPIO.output(TH_STEP, GPIO.HIGH)
+                        sleep(TH_DELAY)
                         GPIO.output(RH_STEP, GPIO.LOW)
-                    sleep(TH_DELAY)
-                    self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
-                    if (x % factorial == 0):
+                        if (x % factorial == 0):
+                            GPIO.output(TH_STEP, GPIO.LOW)
+                        sleep(TH_DELAY)
                         self.curSteps[1] = self.curSteps[1] + int(sign(deltaSteps[1])) # inrecement or decrement based on direction
-                    self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, 4)
-                    self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), 4)
-                    
-                """
-                if self.axistype == AXISTYPE['Rho']:
-                    self.tarSteps = round(self.tarPos * SPR / (math.pi*RH_D))
-                    logging.debug(self.axisname + " target = " + str(self.tarPos) + "[mm]   " + str(self.tarSteps) + " [steps]")
-                    for x in range(abs(self.tarSteps - self.curSteps)):
-                        if self.curSteps < self.tarSteps:
-                            GPIO.output(RH_DIR, CW)
+                        if (x % factorial == 0):
+                            self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
+                        self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, 4)
+                        self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), 4)
+                
+                logging.debug("After double axis move: " + self.curState())
+                
+                # Due to the unequal number of steps, one of the two axes will not yet be at the target destination. Move single axis to correct this.
+                deltaSteps = [(self.tarSteps[0] - self.curSteps[0]), (self.tarSteps[1] - self.curSteps[1])]
+                logging.debug("DeltaSteps: " + str(deltaSteps) + " (loop 2)")
+                if deltaSteps[0] != 0:
+                    for x in range(abs(deltaSteps[0])):
+                            GPIO.output(TH_STEP, GPIO.HIGH)
+                            sleep(TH_DELAY)
+                            GPIO.output(TH_STEP, GPIO.LOW)
+                            sleep(TH_DELAY)
+                            self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
+                            self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, 4)
+                            self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), 4)
+                if deltaSteps[1] != 0:
+                    for x in range(abs(deltaSteps[1])):
                             GPIO.output(RH_STEP, GPIO.HIGH)
                             sleep(RH_DELAY)
                             GPIO.output(RH_STEP, GPIO.LOW)
                             sleep(RH_DELAY)
-                            self.curSteps += 1
-                        else:
-                            GPIO.output(RH_DIR, CCW)
-                            GPIO.output(RH_STEP, GPIO.HIGH)
-                            sleep(RH_DELAY)
-                            GPIO.output(RH_STEP, GPIO.LOW)
-                            sleep(RH_DELAY)
-                            self.curSteps -= 1
-                        self.curPos = round(self.curSteps * math.pi * RH_D / SPR, 4)
-                """
-                logging.debug(self.curState())
+                            self.curSteps[1] = self.curSteps[1] + int(sign(deltaSteps[1])) # inrecement or decrement based on direction
+                            self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, 4)
+                            self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), 4)
+                
+                logging.debug("After single axis move: " + self.curState())
                 return 0
 
     def stripTheta(self):   # strip the theta axis of its rotations

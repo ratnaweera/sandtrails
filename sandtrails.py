@@ -25,25 +25,22 @@ def main():
         logging.info("Steppermotor set up") 
         thetarho = axes.thetarho()
         thetarho.homing()
-        thetarho.goTo([math.pi, 0])
-        """
+        #thetarho.goTo([math.pi, 0])
+        
         thr_coord = []
         #thr_coord = parse_thr("spirale-2019-12-27.thr")
         thr_coord = parse_thr("square-2019-12-30.thr")
         index = 1
         
         for coord in thr_coord:
-            logging.info("Go to " + str(coord[0]) + " " + str(coord[1]) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
-            logging.info(str(float(coord[1])*RHO_MAX))
-            rho.goTo(float(coord[1])*RHO_MAX)
-            sleep(0.001)
-            theta.goTo(float(coord[0]))
+            logging.info("Go to " + str(coord[0]) + " " + str(float(coord[1])*axes.RH_MAX) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
+            thetarho.goTo([float(coord[0]), float(coord[1])*axes.RH_MAX])
             sleep(0.001)
             index += 1
         logging.info("Pattern done!")
         sleep(1)
-        theta.stripTheta()
-        """
+        thetarho.stripTheta()
+        
         logging.info("Main loop done")
         sleep(2)
     
@@ -65,6 +62,6 @@ if __name__ == '__main__':
     #logging.basicConfig(filename='sandtrails.log', level=logging.INFO, format='%(levelname)s: %(message)s')
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
     if sys.version_info[0] < 3:
-        logging.critical("Must be using Python 3")
+        logging.critical("Must use Python 3")
     else:
         main()
