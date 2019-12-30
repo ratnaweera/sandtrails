@@ -5,11 +5,6 @@ import logging          # for debug messages
 import sys
 import csv
 
-RHO_MAX = 180
-RHO_MIN = -5
-THETA_MAX = math.inf
-THETA_MIN = -math.inf
-
 def parse_thr(thrfilename):
     logging.info("Parsing file: " + thrfilename)
     tmp_coord = []
@@ -28,11 +23,10 @@ def main():
         axes.setup_steppermotors()
        
         logging.info("Steppermotor set up") 
-        rho = axes.axis(axes.AXISTYPE['Rho'], RHO_MIN, RHO_MAX)
-        theta = axes.axis(axes.AXISTYPE['Theta'], THETA_MIN, THETA_MAX)
-        rho.homing()
-        theta.homing()
-        
+        thetarho = axes.thetarho()
+        thetarho.homing()
+        thetarho.goTo([math.pi, 0])
+        """
         thr_coord = []
         #thr_coord = parse_thr("spirale-2019-12-27.thr")
         thr_coord = parse_thr("square-2019-12-30.thr")
@@ -49,8 +43,9 @@ def main():
         logging.info("Pattern done!")
         sleep(1)
         theta.stripTheta()
-        
+        """
         logging.info("Main loop done")
+        sleep(2)
     
     except Exception as error:
         logging.error("Exception occured: " + str(error))
@@ -58,9 +53,9 @@ def main():
         # shut down cleanly
         try: # drive axes to zero
             logging.info("Going back home")
-            rho.goTo(0)
-            theta.goTo(0)
-        except:
+            thetarho.goTo([0, 0])
+        except Exception as error2:
+            logging.error("Exception occured: " + str(error2))
             logging.error("Could not drive axes back to zero. Careful on next run, might hit physical limits")
         finally:
             axes.GPIO.cleanup()
@@ -68,7 +63,7 @@ def main():
 
 if __name__ == '__main__':
     #logging.basicConfig(filename='sandtrails.log', level=logging.INFO, format='%(levelname)s: %(message)s')
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
     if sys.version_info[0] < 3:
         logging.critical("Must be using Python 3")
     else:

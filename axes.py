@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 import logging
 import math
 from time import sleep
+from numpy import sign
 
 # Theta Axis
 TH_DIR = 5               # Direction GPIO Pin
@@ -16,14 +17,13 @@ RH_STEP = 20             # Step GPIO Pin
 RH_MODE = (22, 27, 17)   # Microstep Resolution GPIO Pins
 RH_D = 14                # Diameter spur gear of Rho axis [mm]
 RH_DELAY = 0.006 / 32    # Delay for movement in rho axis [s]
+RH_MAX = 180             # Maximum value for Rho axis
+RH_MIN = -5              # Minimum value for Rho axis
+
 
 CW = 1         # Clockwise Rotation
 CCW = 0        # Counterclockwise Rotation
 SPR = 200*32   # Steps per Revolution
-
-AXISTYPE = {
-    'Rho': 0,
-    'Theta': 1}
 
 def setup_steppermotors():
     GPIO.setmode(GPIO.BCM)
@@ -46,46 +46,83 @@ def setup_steppermotors():
     GPIO.output(TH_MODE, RESOLUTION['1/32'])
 
     
-class axis:
-    def __init__(self, axistype, axis_min, axis_max):
-        self.axistype = axistype  # from dictionary AXISTYPE
-        self.axis_min = axis_min  # lower limit  [in rad or mm]
-        self.axis_max = axis_max  # upper limit [in rad or mm]
-        self.curSteps = 0         # current position [in steps]
-        self.curPos = 0           # current position [in rad or mm]
-        self.tarSteps = 0         # target position [in steps]
-        self.tarPos = 0           # target position [im rad or mm]
+class thetarho:
+    def __init__(self):
+        self.curPos = [0.0, 0.0]  # current position [in rad and mm]
+        self.curSteps = [0, 0]    # current position [in steps]
+        self.tarPos = [0.0, 0.0]  # target position [in rad and mm]
+        self.tarSteps = [0, 0]    # target position [in steps]
         self.homed = False        # turns True once homed
-        if self.axistype == AXISTYPE['Theta']:
-            self.axisname = "Theta"
-        elif self.axistype == AXISTYPE['Rho']:
-            self.axisname = "Rho"        
-        else:
-            logging.error("Unknown axis type (should never happen)")
-    
-    def state(self):
-        state_str = self.axisname + ": (" + str(self.curSteps) + ", " + str(self.curPos) + ", " + str(self.tarSteps) + ", " + str(self.tarPos) + ") (curSteps, curPos, tarSteps, tarPos)"
+        
+    def curState(self):
+        state_str = str(self.curPos) + " " + str(self.curSteps) + " [curPos] [curSteps]"
         return state_str
         
     def homing(self):
-        # Drive until we see the homing switch. Not implemented yet.
-        self.curSteps = self.curPos = 0
+        # TODO: Drive until we see the homing switch. Not implemented yet.
         self.homed = True
         
-    def goTo(self, dest):    # destination position [in rad or mm]
-        logging.debug(self.axisname + " goTo: " + str(dest))
-        if not self.homed:
-            logging.error(self.axisname + " not homed!")
+    def goTo(self, dest):    # destination position [in rad and mm]
+        logging.debug("goTo: " + str(dest))
+        if type(dest) != list:
+            logging.error("Invalid argument (destination should be a list)")
             return -1
-        elif (dest < self.axis_min) or (dest > self.axis_max):
-            logging.error(self.axisname + " target violates limits")
+        elif len(dest) != 2:
+            logging.error("Invalid argument (destination needs exactly two arguments)")
+            return -1
+        elif not self.homed:
+            logging.error("Not homed!")
+            return -1
+        elif (dest[1] < RH_MIN) or (dest[1] > RH_MAX):
+            logging.error("Target violates RHO axis limits")
             return -1
         else:
-            self.tarPos = round(dest, 4)
-            if self.tarPos == self.curPos:
-                logging.info(self.axisname + " already at target position " + str(self.tarPos))
+            self.tarPos[0] = round(dest[0], 4)
+            self.tarPos[1] = round(dest[1], 4)
+            if (self.tarPos[0] == self.curPos[0]) and (self.tarPos[1] == self.curPos[1]):
+                logging.info("Already at target position " + str(self.tarPos))
                 return 0
             else:
+                self.tarSteps[0] = round(self.tarPos[0] * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
+                logging.debug("Theta target = " + str(self.tarPos[0]) + "[rad] " + str(self.tarSteps[0]) + "[steps]")
+                self.tarSteps[1] = round(SPR / (math.pi * RH_D) * self.tarPos[1] - self.tarSteps[0] * TH_GEAR)
+                logging.debug("Rho target = " + str(self.tarPos[1]) + "[mm] " + str(self.tarSteps[1]) + "[steps]")
+
+                deltaSteps = [(self.tarSteps[0] - self.curSteps[0]), (self.tarSteps[1] - self.curSteps[1])]
+                
+                if abs(deltaSteps[0]) < abs(deltaSteps[1]):
+                    logging.error("Unhandled case where steps in theta are less than those in rho. Exiting")
+                    return -1
+                
+                # Calculate how after how many theta iterations the rho axis is to be moved
+                factorial = math.floor(deltaSteps[0] / deltaSteps[1])
+                
+                if deltaSteps[0] > 0:   # Differentiate rotation direction based on deltaSteps
+                    GPIO.output(TH_DIR, CW)
+                else:
+                    GPIO.output(TH_DIR, CCW)
+                if deltaSteps[1] > 0:   # Differentiate rotation direction based on deltaSteps
+                    GPIO.output(RH_DIR, CW)
+                else:
+                    GPIO.output(RH_DIR, CCW)
+                sleep(TH_DELAY)         # Give output time to set. Unsure if necessary
+                    
+                for x in range(abs(deltaSteps[0])):
+                    GPIO.output(TH_STEP, GPIO.HIGH)
+                    if (x % factorial == 0):
+                        GPIO.output(RH_STEP, GPIO.HIGH)
+                    sleep(TH_DELAY)
+                    GPIO.output(TH_STEP, GPIO.LOW)
+                    if (x % factorial == 0):
+                        GPIO.output(RH_STEP, GPIO.LOW)
+                    sleep(TH_DELAY)
+                    self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
+                    if (x % factorial == 0):
+                        self.curSteps[1] = self.curSteps[1] + int(sign(deltaSteps[1])) # inrecement or decrement based on direction
+                    self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, 4)
+                    self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), 4)
+                    
+                """
                 if self.axistype == AXISTYPE['Rho']:
                     self.tarSteps = round(self.tarPos * SPR / (math.pi*RH_D))
                     logging.debug(self.axisname + " target = " + str(self.tarPos) + "[mm]   " + str(self.tarSteps) + " [steps]")
@@ -105,34 +142,11 @@ class axis:
                             sleep(RH_DELAY)
                             self.curSteps -= 1
                         self.curPos = round(self.curSteps * math.pi * RH_D / SPR, 4)
-                elif self.axistype == AXISTYPE['Theta']:
-                    self.tarSteps = round(self.tarPos * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
-                    logging.debug(self.axisname + " target = " + str(self.tarPos) + "[rad]   " + str(self.tarSteps) + " [steps]")
-                    for x in range(abs(self.tarSteps - self.curSteps)):
-                        if self.curSteps < self.tarSteps:
-                            GPIO.output(TH_DIR, CW)
-                            GPIO.output(TH_STEP, GPIO.HIGH)
-                            sleep(TH_DELAY)
-                            GPIO.output(TH_STEP, GPIO.LOW)
-                            sleep(TH_DELAY)
-                            self.curSteps += 1
-                        else:
-                            GPIO.output(TH_DIR, CCW)
-                            GPIO.output(TH_STEP, GPIO.HIGH)
-                            sleep(TH_DELAY)
-                            GPIO.output(TH_STEP, GPIO.LOW)
-                            sleep(TH_DELAY)
-                            self.curSteps -= 1
-                        self.curPos = round(self.curSteps * 2 * math.pi / SPR * TH_GEAR, 4)
-                else:
-                    logging.error("Unknown axis type (should never happen)")
-                    return -1
-                logging.debug(self.state())
+                """
+                logging.debug(self.curState())
                 return 0
 
     def stripTheta(self):   # strip the theta axis of its rotations
-        if self.axistype == AXISTYPE['Theta']:
-            logging.info("Before stripping 2*pi: " + self.state())
-            self.curPos = self.curPos % (2*math.pi)
-            self.curSteps = round(self.curPos * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
-            logging.info("After stripping 2*pi: " + self.state())
+        self.curPos[0] = self.curPos[0] % (2*math.pi)
+        self.curSteps[0] = round(self.curPos[0] * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
+        
