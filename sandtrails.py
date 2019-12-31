@@ -25,15 +25,26 @@ def main():
         logging.info("Steppermotor set up") 
         thetarho = axes.thetarho()
         thetarho.homing()
-        #thetarho.goTo([math.pi, 0])
         
+        """
+        its = 10
+        for i in range(its):
+            logging.info("Iteration " + str(i) + "/" + str(its))
+            thetarho.goTo([0, 40])
+            thetarho.goTo([2.1*math.pi, 60])
+            sleep(0.1)
+            thetarho.goTo([0, 40])
+            thetarho.goTo([0, 0])
+            sleep(0.1)
+        
+        """
         thr_coord = []
-        #thr_coord = parse_thr("spirale-2019-12-27.thr")
-        thr_coord = parse_thr("square-2019-12-30.thr")
+        thr_coord = parse_thr("spirale-2019-12-27.thr")
+        #thr_coord = parse_thr("square-2019-12-30.thr")
         index = 1
         
         for coord in thr_coord:
-            logging.info("Go to " + str(coord[0]) + " " + str(float(coord[1])*axes.RH_MAX) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
+            logging.info("Go to " + str(round(float(coord[0]), 4)) + " " + str(round(float(coord[1])*axes.RH_MAX, 4)) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
             thetarho.goTo([float(coord[0]), float(coord[1])*axes.RH_MAX])
             sleep(0.001)
             index += 1
