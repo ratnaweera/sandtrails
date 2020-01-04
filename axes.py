@@ -54,7 +54,6 @@ class thetarho:
         self.curSteps = [0, 0]         # [steps steps] current position
         self.tarPos = [0.0, 0.0]       # [rad mm]      target position
         self.tarSteps = [0, 0]         # [steps steps] target position
-        self.tarRemainder = [0.0, 0.0] # [rad mm]      remainder after rounding target to nearest steps
         self.homed = False             # turns True once homed
         
     def curState(self):
@@ -86,18 +85,11 @@ class thetarho:
                 return 0
             else:
                 # SPR is steps for 2*math.pi
-                # Get int part of division for number of steps, save remainder as the rad that cannot be moved yet
-                quotient, remainder = divmod(self.tarPos[0] * SPR / (2*math.pi) / TH_GEAR, 1)
-                self.tarSteps[0] = int(quotient)
-                self.tarRemainder[0] = remainder
-                quotient, remainder = divmod(SPR / (math.pi * RH_D) * self.tarPos[1] - self.tarSteps[0] * TH_GEAR, 1)
-                self.tarSteps[1] = int(quotient)
-                self.tarRemainder[1] = remainder
+                self.tarSteps[0] = round(self.tarPos[0] * SPR / (2*math.pi) / TH_GEAR)
+                self.tarSteps[1] = round(SPR / (math.pi * RH_D) * self.tarPos[1] - self.tarSteps[0] * TH_GEAR)
                 
                 logging.debug("goTo: " + str(self.tarPos) + " [rad mm] " + str(self.tarSteps) + " [steps steps]")
-                #logging.debug("remainder: " + str(self.tarRemainder) + " [rad mm]")
-
-
+                
                 deltaSteps = [(self.tarSteps[0] - self.curSteps[0]), (self.tarSteps[1] - self.curSteps[1])]
                 logging.debug("delta: " + str(deltaSteps) + " [steps steps] (loop 1)")
 
