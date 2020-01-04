@@ -26,17 +26,18 @@ def main():
         thetarho = axes.thetarho()
         thetarho.homing()
         
-        """
-        its = 10
+        
+        its = 1
         for i in range(its):
             logging.info("Iteration " + str(i) + "/" + str(its))
-            thetarho.goTo([0, 40])
-            thetarho.goTo([2.1*math.pi, 60])
-            sleep(0.1)
-            thetarho.goTo([0, 40])
-            thetarho.goTo([0, 0])
-            sleep(0.1)
-        
+            thetarho.goTo([0, 5])
+            sleep(1)
+            thetarho.goTo([2.05*math.pi, 5])
+            sleep(1)
+            thetarho.stripTheta()
+            thetarho.goTo([0, 5])
+            sleep(1)
+            
         """
         thr_coord = []
         thr_coord = parse_thr("spirale-2019-12-27.thr")
@@ -51,9 +52,9 @@ def main():
         logging.info("Pattern done!")
         sleep(1)
         thetarho.stripTheta()
-        
+        """
         logging.info("Main loop done")
-        sleep(2)
+        sleep(5)
     
     except Exception as error:
         logging.error("Exception occured: " + str(error))

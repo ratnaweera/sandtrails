@@ -25,6 +25,8 @@ CW = 1         # Clockwise Rotation
 CCW = 0        # Counterclockwise Rotation
 SPR = 200*32   # Steps per Revolution
 
+sign = lambda x: (1, -1)[x < 0]
+
 def setup_steppermotors():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(TH_DIR, GPIO.OUT)
@@ -180,7 +182,13 @@ class thetarho:
                 return 0
 
     def stripTheta(self):   # strip the theta axis of its rotations
-        #self.curPos[0] = self.curPos[0] % (2*math.pi)
-        #self.curSteps[0] = round(self.curPos[0] * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
-        #TODO: Not yet implemented
+        logging.debug("Pos before stripping 2*pi: " + self.curState())
+        # Round to the nearest circle (+2pi or -2pi)
+        div, remain = divmod(self.curPos[0], sign(self.curPos[0])*2*math.pi)
+        logging.debug("Circles: " + str(div) + " remainder: " + str(remain))
+        self.curPos[0] = remain
+        self.curSteps[0] = round(self.curPos[0] * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
+        #Subtract or add the number of steps that RHO would have corrected in the div number of circles
+        self.curSteps[1] += sign(self.curPos[0])*int(div*SPR)
+        logging.debug("Pos after stripping 2*pi: " + self.curState())
         return 0
