@@ -57,26 +57,28 @@ class thetarho:
         self.tarSteps = [0, 0]         # [steps steps] target position
         self.homed = False             # turns True once homed
         
+    # Return current state (= position and steps)
     def curState(self):
         state_str = str(self.curPos) + " [rad mm] " + str(self.curSteps) + " [steps steps]"
         return state_str
         
+    # TODO: Drive until we see the homing switch. Not implemented yet.
     def homing(self):
-        # TODO: Drive until we see the homing switch. Not implemented yet.
         self.homed = True
-    
-    def withinTolerance(self, dest):
+
+    # Check if current position is within a tolerance window of the position passsed as an argument
+    def withinTolerance(self, dest): 
         if (self.curPos[0] >= dest[0] - TH_TOL) and \
            (self.curPos[0] <= dest[0] + TH_TOL) and \
            (self.curPos[1] >= dest[1] - RH_TOL) and \
            (self.curPos[1] <= dest[1] + RH_TOL):
-            logging.debug("Currently within tolerance window of " + str(dest))
+            #logging.debug("Currently within tolerance window of " + str(dest))
             return True
         else:
-            logging.debug("Currently outside tolerance window of " + str(dest))
+            #logging.debug("Currently outside tolerance window of " + str(dest))
             return False
         
-        
+    # Move axes to reach dest position
     def goTo(self, dest):    # destination position [in rad and mm]
         if not self.homed:
             logging.error("Not homed!")
@@ -112,7 +114,10 @@ class thetarho:
             if abs(deltaSteps[0]) >= abs(deltaSteps[1]):    # More steps in THETA than there are in RHO
                 # Calculate how after how many THETA iterations the RHO axis is to be moved
                 if deltaSteps[1] != 0:
-                    factorial = math.floor(deltaSteps[0] / deltaSteps[1])
+                    if deltaSteps[1] > 0: # if moving in positive RHO, round down to next integer factor to undershoot
+                        factorial = math.floor(deltaSteps[0] / deltaSteps[1])
+                    else: # if moving in negative RHO, round up to next integer to undershoot
+                        factorial = math.ceil(deltaSteps[0] / deltaSteps[1])
                 else:
                     factorial = math.inf
                 logging.debug("More THETA steps than RHO steps. Factorial = " + str(factorial))
@@ -134,7 +139,10 @@ class thetarho:
             else:  # More steps in RHO than there are in THETA
                     # Calculate how after how many RHO iterations the THETA axis is to be moved
                 if deltaSteps[0] != 0:
-                    factorial = math.floor(deltaSteps[1] / deltaSteps[0])
+                    if deltaSteps[0] > 0:
+                        factorial = math.floor(deltaSteps[1] / deltaSteps[0])
+                    else:
+                        factorial = math.ceil(deltaSteps[1] / deltaSteps[0])
                 else:
                     factorial = math.inf
                 logging.debug("More RHO steps than THETA steps. Factorial = " + str(factorial))
@@ -181,7 +189,8 @@ class thetarho:
             logging.debug("Position after single axis move: " + self.curState())
             return 0
 
-    def stripTheta(self):   # strip the theta axis of its rotations
+    # Strip the position of the axes to within a +/- 2Pi circle. Affects both THETA and RHO 
+    def stripTheta(self):   
         logging.debug("Pos before stripping 2*pi: " + self.curState())
         # Round to the nearest circle (+2pi or -2pi)
         div, remain = divmod(self.curPos[0], sign(self.curPos[0])*2*math.pi)
