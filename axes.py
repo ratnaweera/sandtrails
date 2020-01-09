@@ -9,20 +9,15 @@ CCW = 0                  # Counterclockwise Rotation
 SPR = 200*32             # Steps per Revolution (NEMA = 200 Steps/rev, microstepping 1/32)
 
 # Theta Axis
-TH_DIR = 5               # Direction GPIO Pin
-TH_STEP = 6              # Step GPIO Pin
-TH_MODE = (26, 19, 13)   # Microstep Resolution GPIO Pins
-TH_GEAR = 28/600         # Gear ratio of motor:theta-axis
-TH_TOL = 2*math.pi*TH_GEAR/SPR  # [rad] tolerance when comparing two positions (1 step error)
+DIR = [5, 21]            # Direction GPIO Pin
+STEP = [6, 20]              # Step GPIO Pin
+MODE = [(26, 19, 13), (22, 27, 17)]   # Microstep Resolution GPIO Pins
+GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
+TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 
 # Rho Axis
-RH_DIR = 21              # Direction GPIO Pin
-RH_STEP = 20             # Step GPIO Pin
-RH_MODE = (22, 27, 17)   # Microstep Resolution GPIO Pins
-RH_D = 14           # Diameter spur gear of Rho axis [mm]
 RH_MAX = 170             # Maximum value for Rho axis
 RH_MIN = -5              # Minimum value for Rho axis
-RH_TOL = math.pi*RH_D/SPR# [mm] tolerance when comparing two positions (~1 step error)
 
 STEP_DELAY = 0.0001      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
@@ -32,23 +27,23 @@ sign = lambda x: (1, -1)[x < 0]
 
 def setup_steppermotors():
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(TH_DIR, GPIO.OUT)
-    GPIO.setup(TH_STEP, GPIO.OUT)
-    GPIO.setup(RH_DIR, GPIO.OUT)
-    GPIO.setup(RH_STEP, GPIO.OUT)
-    GPIO.output(TH_DIR, CW)
-    GPIO.output(RH_DIR, CW)
+    GPIO.setup(DIR[0], GPIO.OUT)
+    GPIO.setup(DIR[1], GPIO.OUT)
+    GPIO.setup(STEP[0], GPIO.OUT)
+    GPIO.setup(STEP[1], GPIO.OUT)
+    GPIO.output(DIR[0], CW)
+    GPIO.output(DIR[0], CW)
 
-    GPIO.setup(TH_MODE, GPIO.OUT)
-    GPIO.setup(RH_MODE, GPIO.OUT)
+    GPIO.setup(MODE[0], GPIO.OUT)
+    GPIO.setup(MODE[1], GPIO.OUT)
     RESOLUTION = {'Full': (0, 0, 0),
                   'Half': (1, 0, 0),
                   '1/4': (0, 1, 0),
                   '1/8': (1, 1, 0),
                   '1/16': (0, 0, 1),
                   '1/32': (1, 0, 1)}
-    GPIO.output(RH_MODE, RESOLUTION['1/32'])
-    GPIO.output(TH_MODE, RESOLUTION['1/32'])
+    GPIO.output(MODE[0], RESOLUTION['1/32'])
+    GPIO.output(MODE[0], RESOLUTION['1/32'])
 
     
 class thetarho:
@@ -70,10 +65,10 @@ class thetarho:
 
     # Check if current position is within a tolerance window of the position passsed as an argument
     def withinTolerance(self, dest): 
-        if (self.curPos[0] >= dest[0] - TH_TOL) and \
-           (self.curPos[0] <= dest[0] + TH_TOL) and \
-           (self.curPos[1] >= dest[1] - RH_TOL) and \
-           (self.curPos[1] <= dest[1] + RH_TOL):
+        if (self.curPos[0] >= dest[0] - TOL[0]) and \
+           (self.curPos[0] <= dest[0] + TOL[0]) and \
+           (self.curPos[1] >= dest[1] - TOL[1]) and \
+           (self.curPos[1] <= dest[1] + TOL[1]):
             #logging.debug("Currently within tolerance window of " + str(dest))
             return True
         else:
@@ -95,8 +90,8 @@ class thetarho:
             self.tarPos[0] = round(dest[0], PRECISION)
             self.tarPos[1] = round(dest[1], PRECISION)
             # SPR is steps for 2*math.pi
-            self.tarSteps[0] = round(self.tarPos[0] * SPR / (2*math.pi) / TH_GEAR)
-            self.tarSteps[1] = round(SPR / (math.pi * RH_D) * self.tarPos[1] - self.tarSteps[0] * TH_GEAR)
+            self.tarSteps[0] = round(self.tarPos[0] * SPR / (2*math.pi) / GEAR[0])
+            self.tarSteps[1] = round(SPR / (math.pi * GEAR[1]) * self.tarPos[1] - self.tarSteps[0] * GEAR[0])
             
             logging.debug("goTo: " + str(self.tarPos) + " [rad mm] " + str(self.tarSteps) + " [steps steps]")
             
@@ -104,13 +99,13 @@ class thetarho:
             logging.debug("delta: " + str(deltaSteps) + " [steps steps] (loop 1)")
 
             if deltaSteps[0] > 0:   # Differentiate rotation direction based on deltaSteps
-                GPIO.output(TH_DIR, CW)
+                GPIO.output(DIR[0], CW)
             else:
-                GPIO.output(TH_DIR, CCW)
+                GPIO.output(DIR[0], CCW)
             if deltaSteps[1] > 0:   # Differentiate rotation direction based on deltaSteps
-                GPIO.output(RH_DIR, CW)
+                GPIO.output(DIR[1], CW)
             else:
-                GPIO.output(RH_DIR, CCW)
+                GPIO.output(DIR[1], CCW)
             sleep(STEP_DELAY)         # Give output time to set. Unsure if necessary
 
             if abs(deltaSteps[0]) >= abs(deltaSteps[1]):    # More steps in THETA than there are in RHO
@@ -125,19 +120,19 @@ class thetarho:
                 logging.debug(str(factorial) + " times more THETA steps than RHO steps.")
                 
                 for x in range(abs(deltaSteps[0])):
-                    GPIO.output(TH_STEP, GPIO.HIGH)
+                    GPIO.output(STEP[0], GPIO.HIGH)
                     if (x % factorial == 0):
-                        GPIO.output(RH_STEP, GPIO.HIGH)
+                        GPIO.output(STEP[1], GPIO.HIGH)
                     sleep(STEP_DELAY)
-                    GPIO.output(TH_STEP, GPIO.LOW)
+                    GPIO.output(STEP[0], GPIO.LOW)
                     if (x % factorial == 0):
-                        GPIO.output(RH_STEP, GPIO.LOW)
+                        GPIO.output(STEP[1], GPIO.LOW)
                     sleep(STEP_DELAY)
                     self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
                     if (x % factorial == 0):
                         self.curSteps[1] = self.curSteps[1] + int(sign(deltaSteps[1])) # inrecement or decrement based on direction
-                    self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, PRECISION)
-                    self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), PRECISION)
+                    self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * GEAR[0], PRECISION)
+                    self.curPos[1] = round(math.pi * GEAR[1] / SPR * (self.curSteps[1] + self.curSteps[0] * GEAR[0]), PRECISION)
             else:  # More steps in RHO than there are in THETA
                     # Calculate how after how many RHO iterations the THETA axis is to be moved
                 if deltaSteps[0] != 0:
@@ -150,19 +145,19 @@ class thetarho:
                 logging.debug(str(factorial) + " times more RHO steps than THETA steps.")
                 
                 for x in range(abs(deltaSteps[1])):
-                    GPIO.output(RH_STEP, GPIO.HIGH)
+                    GPIO.output(STEP[1], GPIO.HIGH)
                     if (x % factorial == 0):
-                        GPIO.output(TH_STEP, GPIO.HIGH)
+                        GPIO.output(STEP[0], GPIO.HIGH)
                     sleep(STEP_DELAY)
-                    GPIO.output(RH_STEP, GPIO.LOW)
+                    GPIO.output(STEP[1], GPIO.LOW)
                     if (x % factorial == 0):
-                        GPIO.output(TH_STEP, GPIO.LOW)
+                        GPIO.output(STEP[0], GPIO.LOW)
                     sleep(STEP_DELAY)
                     self.curSteps[1] = self.curSteps[1] + int(sign(deltaSteps[1])) # inrecement or decrement based on direction
                     if (x % factorial == 0):
                         self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
-                    self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, PRECISION)
-                    self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), PRECISION)
+                    self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * GEAR[0], PRECISION)
+                    self.curPos[1] = round(math.pi * GEAR[1] / SPR * (self.curSteps[1] + self.curSteps[0] * GEAR[0]), PRECISION)
             
             logging.debug("Position after double axis move: " + self.curState())
             
@@ -171,22 +166,22 @@ class thetarho:
             logging.debug("delta: " + str(deltaSteps) + " [steps steps] (loop 2)")
             if deltaSteps[0] != 0:
                 for x in range(abs(deltaSteps[0])):
-                        GPIO.output(TH_STEP, GPIO.HIGH)
+                        GPIO.output(STEP[0], GPIO.HIGH)
                         sleep(STEP_DELAY)
-                        GPIO.output(TH_STEP, GPIO.LOW)
+                        GPIO.output(STEP[0], GPIO.LOW)
                         sleep(STEP_DELAY)
                         self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
-                        self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, PRECISION)
-                        self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), PRECISION)
+                        self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * GEAR[0], PRECISION)
+                        self.curPos[1] = round(math.pi * GEAR[1] / SPR * (self.curSteps[1] + self.curSteps[0] * GEAR[0]), PRECISION)
             if deltaSteps[1] != 0:
                 for x in range(abs(deltaSteps[1])):
-                        GPIO.output(RH_STEP, GPIO.HIGH)
+                        GPIO.output(STEP[1], GPIO.HIGH)
                         sleep(STEP_DELAY)
-                        GPIO.output(RH_STEP, GPIO.LOW)
+                        GPIO.output(STEP[1], GPIO.LOW)
                         sleep(STEP_DELAY)
                         self.curSteps[1] = self.curSteps[1] + int(sign(deltaSteps[1])) # inrecement or decrement based on direction
-                        self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * TH_GEAR, PRECISION)
-                        self.curPos[1] = round(math.pi * RH_D / SPR * (self.curSteps[1] + self.curSteps[0] * TH_GEAR), PRECISION)
+                        self.curPos[0] = round(self.curSteps[0] * 2 * math.pi / SPR * GEAR[0], PRECISION)
+                        self.curPos[1] = round(math.pi * GEAR[1] / SPR * (self.curSteps[1] + self.curSteps[0] * GEAR[0]), PRECISION)
             
             logging.debug("Position after single axis move: " + self.curState())
             return 0
@@ -198,7 +193,7 @@ class thetarho:
         div, remain = divmod(self.curPos[0], sign(self.curPos[0])*2*math.pi)
         logging.debug("Circles: " + str(div) + " remainder: " + str(remain))
         self.curPos[0] = remain
-        self.curSteps[0] = round(self.curPos[0] * SPR / (2*math.pi) / TH_GEAR)    # SPR is steps for 2*math.pi
+        self.curSteps[0] = round(self.curPos[0] * SPR / (2*math.pi) / GEAR[0])    # SPR is steps for 2*math.pi
         #Subtract or add the number of steps that RHO would have corrected in the div number of circles
         self.curSteps[1] += sign(self.curPos[0])*int(div*SPR)
         logging.debug("Pos after stripping 2*pi: " + self.curState())
