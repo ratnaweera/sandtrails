@@ -19,7 +19,7 @@ TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when c
 RH_MAX = 170             # Maximum value for Rho axis
 RH_MIN = -5              # Minimum value for Rho axis
 
-STEP_DELAY = 0.0001      # [s] delay between stepper motor steps (~ 1/"speed")
+STEP_DELAY = 0.001      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
 
 
@@ -43,7 +43,7 @@ def setup_steppermotors():
                   '1/16': (0, 0, 1),
                   '1/32': (1, 0, 1)}
     GPIO.output(MODE[0], RESOLUTION['1/32'])
-    GPIO.output(MODE[0], RESOLUTION['1/32'])
+    GPIO.output(MODE[1], RESOLUTION['1/32'])
 
     
 class thetarho:
@@ -123,10 +123,7 @@ class thetarho:
             if abs(deltaSteps[0]) >= abs(deltaSteps[1]):    # More steps in THETA than there are in RHO
                 # te how after how many THETA iterations the RHO axis is to be moved
                 if deltaSteps[1] != 0:
-                    if deltaSteps[1] > 0: # if moving in positive RHO, round down to next integer factor to undershoot
-                        factorial = math.floor(deltaSteps[0] / deltaSteps[1])
-                    else: # if moving in negative RHO, round up to next integer to undershoot
-                        factorial = math.floor(deltaSteps[0] / deltaSteps[1])
+                    factorial = math.floor(deltaSteps[0] / deltaSteps[1])
                 else:
                     factorial = math.inf
                 logging.debug(str(factorial) + " times more THETA steps than RHO steps.")
@@ -151,10 +148,7 @@ class thetarho:
             else:  # More steps in RHO than there are in THETA
                     # Calculate how after how many RHO iterations the THETA axis is to be moved
                 if deltaSteps[0] != 0:
-                    if deltaSteps[0] > 0:
-                        factorial = math.floor(deltaSteps[1] / deltaSteps[0])
-                    else:
-                        factorial = math.ceil(deltaSteps[1] / deltaSteps[0])
+                    factorial = math.floor(deltaSteps[1] / deltaSteps[0])
                 else:
                     factorial = math.inf
                 logging.debug(str(factorial) + " times more RHO steps than THETA steps.")
