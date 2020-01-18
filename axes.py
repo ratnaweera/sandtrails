@@ -4,22 +4,22 @@ import math
 from time import sleep
 from numpy import sign
 
-CW = 1                   # Clockwise Rotation
-CCW = 0                  # Counterclockwise Rotation
+CW = 0                   # Clockwise Rotation
+CCW = 1                  # Counterclockwise Rotation
 SPR = 200*32             # Steps per Revolution (NEMA = 200 Steps/rev, microstepping 1/32)
 
 # Theta Axis
 DIR = [5, 21]            # Direction GPIO Pin
 STEP = [6, 20]              # Step GPIO Pin
 MODE = [(26, 19, 13), (22, 27, 17)]   # Microstep Resolution GPIO Pins
-GEAR = [28/600, 14*0.995]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
+GEAR = [28/600, 14*0.9]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 
 # Rho Axis
-RH_MAX = 170             # Maximum value for Rho axis
+RH_MAX = 25             # Maximum value for Rho axis
 RH_MIN = -5              # Minimum value for Rho axis
 
-STEP_DELAY = 0.001      # [s] delay between stepper motor steps (~ 1/"speed")
+STEP_DELAY = 0.0005      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
 
 
@@ -32,7 +32,7 @@ def setup_steppermotors():
     GPIO.setup(STEP[0], GPIO.OUT)
     GPIO.setup(STEP[1], GPIO.OUT)
     GPIO.output(DIR[0], CW)
-    GPIO.output(DIR[0], CW)
+    GPIO.output(DIR[1], CW)
 
     GPIO.setup(MODE[0], GPIO.OUT)
     GPIO.setup(MODE[1], GPIO.OUT)
@@ -121,16 +121,19 @@ class thetarho:
             moveBothAxes = False      # Variable used later to prevent checking (x % factorial == 0) every time 
             
             if abs(deltaSteps[0]) >= abs(deltaSteps[1]):    # More steps in THETA than there are in RHO
-                # te how after how many THETA iterations the RHO axis is to be moved
+                # After how many steps of THETA we step in RHO
                 if deltaSteps[1] != 0:
-                    factorial = math.floor(deltaSteps[0] / deltaSteps[1])
+                    if (deltaSteps[0] / deltaSteps[1] >= 0): # eg. round 21.42 down to 21
+                        factorial = math.floor(deltaSteps[0] / deltaSteps[1])
+                    else:                                    # eg. round -2.56 up to -2
+                        factorial = math.ceil(deltaSteps[0] / deltaSteps[1])
                 else:
                     factorial = math.inf
                 logging.debug(str(factorial) + " times more THETA steps than RHO steps.")
                 
                 for x in range(abs(deltaSteps[0])):
                     GPIO.output(STEP[0], GPIO.HIGH)
-                    if (x % factorial == 0):
+                    if (x != 0) and (x % factorial == 0):  # (0 % factorial) is always 0, so exclude from test case
                         GPIO.output(STEP[1], GPIO.HIGH)
                         moveBothAxes = True
                     else:
@@ -146,16 +149,19 @@ class thetarho:
                 self.curPos = self.convertStepsToPos(self.curSteps)
                     
             else:  # More steps in RHO than there are in THETA
-                    # Calculate how after how many RHO iterations the THETA axis is to be moved
+                   # After how many steps of RHO we step in THETA
                 if deltaSteps[0] != 0:
-                    factorial = math.floor(deltaSteps[1] / deltaSteps[0])
+                    if (deltaSteps[0] / deltaSteps[1] >= 0): # eg. round 21.42 down to 21
+                        factorial = math.floor(deltaSteps[1] / deltaSteps[0])
+                    else:                                    # eg. round -2.56 up to -2
+                        factorial = math.ceil(deltaSteps[1] / deltaSteps[0])
                 else:
                     factorial = math.inf
                 logging.debug(str(factorial) + " times more RHO steps than THETA steps.")
                 
                 for x in range(abs(deltaSteps[1])):
                     GPIO.output(STEP[1], GPIO.HIGH)
-                    if (x % factorial == 0):
+                    if (x != 0) and (x % factorial == 0):  # (0 % factorial) is always 0, so exclude from test case
                         GPIO.output(STEP[0], GPIO.HIGH)
                         moveBothAxes = True
                     else:
@@ -172,6 +178,7 @@ class thetarho:
             
             logging.debug("Position after double axis move: " + self.curState())
             
+            """
             # Due to the unequal number of steps, one of the two axes will not yet be at the target destination. Move single axis to correct this.
             deltaSteps = [(self.tarSteps[0] - self.curSteps[0]), (self.tarSteps[1] - self.curSteps[1])]
             logging.debug("delta: " + str(deltaSteps) + " [steps steps] (loop 2)")
@@ -191,8 +198,8 @@ class thetarho:
                     sleep(STEP_DELAY)
                     self.curSteps[1] +=int(sign(deltaSteps[1])) # inrecement or decrement based on direction
                 self.curPos = self.convertStepsToPos(self.curSteps)
-            
             logging.debug("Position after single axis move: " + self.curState())
+            """
             return 0
 
     # Strip the position of the axes to within a +/- 2Pi circle. Affects both THETA and RHO 
@@ -203,7 +210,7 @@ class thetarho:
         logging.debug("Pos before stripping 2*pi: " + self.curState())
         # Round to the nearest circle (+2pi or -2pi)
         div, remain = divmod(self.curPos[0], sign(self.curPos[0])*2*math.pi)
-        logging.debug("Circles: " + str(div) + " remainder: " + str(remain))
+        logging.debug("Circles: " + str(div) + " remainder: " + str(round(remain, PRECISION)))
         self.curPos[0] = remain
         self.curSteps[0] = round(self.curPos[0] * SPR / (2*math.pi) / GEAR[0])    # SPR is steps for 2*math.pi
         #Subtract or add the number of steps that RHO would have corrected in the div number of circles
