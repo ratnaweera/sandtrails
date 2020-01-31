@@ -151,7 +151,7 @@ class thetarho:
             else:  # More steps in RHO than there are in THETA
                    # After how many steps of RHO we step in THETA
                 if deltaSteps[0] != 0:
-                    if (deltaSteps[0] / deltaSteps[1] >= 0): # eg. round 21.42 down to 21
+                    if (deltaSteps[1] / deltaSteps[0] >= 0): # eg. round 21.42 down to 21
                         factorial = math.floor(deltaSteps[1] / deltaSteps[0])
                     else:                                    # eg. round -2.56 up to -2
                         factorial = math.ceil(deltaSteps[1] / deltaSteps[0])
