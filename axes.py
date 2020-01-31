@@ -79,13 +79,13 @@ class thetarho:
     def convertPosToSteps(self, argPos): # argPos in [rad mm]
         # SPR is steps for 2*math.pi
         res0 = round(argPos[0] * SPR / (2*math.pi) / GEAR[0])
-        res1 = round(SPR / (math.pi * GEAR[1]) * argPos[1] - res0 * GEAR[0])
+        res1 = round(argPos[1] * SPR / (2*math.pi) / GEAR[1] - res0 * GEAR[0])	# include rounding of theta
         return [res0, res1]
     
     # For a given steps in [steps, steps], calculate the corresponding position in [rad, mm]
     def convertStepsToPos(self, argSteps): # argSteps in [steps, steps]
-        res0 = round(argSteps[0] * 2 * math.pi / SPR * GEAR[0], PRECISION)
-        res1 = round(math.pi * GEAR[1] / SPR * (argSteps[1] + argSteps[0] * GEAR[0]), PRECISION)
+        res0 = round(argSteps[0] / SPR * (2*math.pi) * GEAR[0], PRECISION)
+        res1 = round((2*math.pi) * GEAR[1] / SPR * (argSteps[1] + argSteps[0] * GEAR[0]), PRECISION)
         return [res0, res1]
     
     # Move axes to reach dest position
