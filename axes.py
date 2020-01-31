@@ -8,7 +8,7 @@ CW = 0                   # Clockwise Rotation
 CCW = 1                  # Counterclockwise Rotation
 SPR = 200*32             # Steps per Revolution (NEMA = 200 Steps/rev, microstepping 1/32)
 
-# Theta Axis
+# Axes Configuration: [Theta Axis, Rho Axis]
 DIR = [5, 21]            # Direction GPIO Pin
 STEP = [6, 20]              # Step GPIO Pin
 MODE = [(26, 19, 13), (22, 27, 17)]   # Microstep Resolution GPIO Pins
@@ -16,8 +16,8 @@ GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear R
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 
 # Rho Axis
-RH_MAX = 150             # Maximum value for Rho axis
-RH_MIN = -5              # Minimum value for Rho axis
+RH_MAX = 150             # Maximum value for Rho axis in [mm]
+RH_MIN = -5              # Minimum value for Rho axis in [mm]
 
 STEP_DELAY = 0.0001      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
