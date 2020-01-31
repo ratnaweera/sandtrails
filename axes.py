@@ -133,7 +133,7 @@ class thetarho:
                 
                 for x in range(abs(deltaSteps[0])):
                     GPIO.output(STEP[0], GPIO.HIGH)
-                    if (x != 0) and (x % factorial == 0):  # (0 % factorial) is always 0, so exclude from test case
+                    if ((x+1) % factorial == 0):
                         GPIO.output(STEP[1], GPIO.HIGH)
                         moveBothAxes = True
                     else:
@@ -161,7 +161,7 @@ class thetarho:
                 
                 for x in range(abs(deltaSteps[1])):
                     GPIO.output(STEP[1], GPIO.HIGH)
-                    if (x != 0) and (x % factorial == 0):  # (0 % factorial) is always 0, so exclude from test case
+                    if ((x+1) % factorial == 0):
                         GPIO.output(STEP[0], GPIO.HIGH)
                         moveBothAxes = True
                     else:
