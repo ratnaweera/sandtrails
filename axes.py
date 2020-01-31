@@ -12,14 +12,14 @@ SPR = 200*32             # Steps per Revolution (NEMA = 200 Steps/rev, microstep
 DIR = [5, 21]            # Direction GPIO Pin
 STEP = [6, 20]              # Step GPIO Pin
 MODE = [(26, 19, 13), (22, 27, 17)]   # Microstep Resolution GPIO Pins
-GEAR = [28/600, 14*0.9]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
+GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 
 # Rho Axis
-RH_MAX = 25             # Maximum value for Rho axis
+RH_MAX = 150             # Maximum value for Rho axis
 RH_MIN = -5              # Minimum value for Rho axis
 
-STEP_DELAY = 0.0005      # [s] delay between stepper motor steps (~ 1/"speed")
+STEP_DELAY = 0.0001      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
 
 

@@ -25,34 +25,29 @@ def main():
         logging.info("Steppermotor set up") 
         thetarho = axes.thetarho()
         thetarho.homing()
+        """
+        thetarho.goTo([2*math.pi, 0.0])
+        sleep(5)
+        thetarho.goTo([4*math.pi, 0.0])
+        sleep(5)
+        thetarho.goTo([10*math.pi, 0.0])
         
+        sleep(2)
         
-        its = 1
-        for i in range(its):
-            logging.info("Iteration " + str(i) + "/" + str(its))
-            thetarho.goTo([0, 5])
-            sleep(1)
-            thetarho.goTo([2.05*math.pi, 5])
-            sleep(1)
-            thetarho.stripTheta()
-            thetarho.goTo([0, 5])
-            sleep(1)
-            
         """
         thr_coord = []
-        thr_coord = parse_thr("spirale-2019-12-27.thr")
-        #thr_coord = parse_thr("square-2019-12-30.thr")
+        #thr_coord = parse_thr("wiper-15.thr")
+        #thr_coord = parse_thr("test-1.thr")
+        thr_coord = parse_thr("spiral-2020-01-25.thr")
         index = 1
         
         for coord in thr_coord:
-            logging.info("Go to " + str(round(float(coord[0]), 4)) + " " + str(round(float(coord[1])*axes.RH_MAX, 4)) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
+            logging.info("Go to " + str(round(float(coord[0]), 5)) + " " + str(round(float(coord[1])*axes.RH_MAX, 5)) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
             thetarho.goTo([float(coord[0]), float(coord[1])*axes.RH_MAX])
-            sleep(0.001)
+            #sleep(1)
             index += 1
         logging.info("Pattern done!")
-        sleep(1)
-        thetarho.stripTheta()
-        """
+        
         logging.info("Main loop done")
         sleep(5)
     
@@ -62,6 +57,8 @@ def main():
         # shut down cleanly
         try: # drive axes to zero
             logging.info("Going back home")
+            
+            thetarho.stripTheta()
             thetarho.goTo([0, 0])
         except Exception as error2:
             logging.error("Exception occured: " + str(error2))
