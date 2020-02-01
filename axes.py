@@ -8,7 +8,7 @@ CW = 0                   # Clockwise Rotation
 CCW = 1                  # Counterclockwise Rotation
 SPR = 200*32             # Steps per Revolution (NEMA = 200 Steps/rev, microstepping 1/32)
 
-# Theta Axis
+# Axes Configuration: [Theta Axis, Rho Axis]
 DIR = [5, 21]            # Direction GPIO Pin
 STEP = [6, 20]              # Step GPIO Pin
 MODE = [(26, 19, 13), (22, 27, 17)]   # Microstep Resolution GPIO Pins
@@ -16,8 +16,8 @@ GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear R
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 
 # Rho Axis
-RH_MAX = 150             # Maximum value for Rho axis
-RH_MIN = -5              # Minimum value for Rho axis
+RH_MAX = 150             # Maximum value for Rho axis in [mm]
+RH_MIN = -5              # Minimum value for Rho axis in [mm]
 
 STEP_DELAY = 0.0002      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
@@ -79,13 +79,13 @@ class thetarho:
     def convertPosToSteps(self, argPos): # argPos in [rad mm]
         # SPR is steps for 2*math.pi
         res0 = round(argPos[0] * SPR / (2*math.pi) / GEAR[0])
-        res1 = round(SPR / (math.pi * GEAR[1]) * argPos[1] - res0 * GEAR[0])
+        res1 = round(argPos[1] * SPR / (2*math.pi) / GEAR[1] - res0 * GEAR[0])	# include rounding of theta
         return [res0, res1]
     
     # For a given steps in [steps, steps], calculate the corresponding position in [rad, mm]
     def convertStepsToPos(self, argSteps): # argSteps in [steps, steps]
-        res0 = round(argSteps[0] * 2 * math.pi / SPR * GEAR[0], PRECISION)
-        res1 = round(math.pi * GEAR[1] / SPR * (argSteps[1] + argSteps[0] * GEAR[0]), PRECISION)
+        res0 = round(argSteps[0] / SPR * (2*math.pi) * GEAR[0], PRECISION)
+        res1 = round((2*math.pi) * GEAR[1] / SPR * (argSteps[1] + argSteps[0] * GEAR[0]), PRECISION)
         return [res0, res1]
     
     # Move axes to reach dest position
@@ -136,7 +136,7 @@ class thetarho:
                 
                 for x in range(abs(deltaSteps[0])):
                     GPIO.output(STEP[0], GPIO.HIGH)
-                    if (x != 0) and (x % factorial == 0):  # (0 % factorial) is always 0, so exclude from test case
+                    if ((x+1) % factorial == 0):
                         GPIO.output(STEP[1], GPIO.HIGH)
                         moveBothAxes = True
                     else:
@@ -156,7 +156,7 @@ class thetarho:
                 if deltaSteps[0] != 0:
                     factorial = math.floor(deltaSteps[1] / deltaSteps[0])
                     """
-                    if (deltaSteps[0] / deltaSteps[1] >= 0): # eg. round 21.42 down to 21
+                    if (deltaSteps[1] / deltaSteps[0] >= 0): # eg. round 21.42 down to 21
                         factorial = math.floor(deltaSteps[1] / deltaSteps[0])
                     else:                                    # eg. round -2.56 up to -2
                         factorial = math.ceil(deltaSteps[1] / deltaSteps[0])
@@ -167,7 +167,7 @@ class thetarho:
                 
                 for x in range(abs(deltaSteps[1])):
                     GPIO.output(STEP[1], GPIO.HIGH)
-                    if (x != 0) and (x % factorial == 0):  # (0 % factorial) is always 0, so exclude from test case
+                    if ((x+1) % factorial == 0):
                         GPIO.output(STEP[0], GPIO.HIGH)
                         moveBothAxes = True
                     else:
