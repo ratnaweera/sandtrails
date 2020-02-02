@@ -87,7 +87,7 @@ class thetarho:
     # For a given motor position in [steps, steps], calculate the corresponding magnet position in [rad, mm]
     def convertStepsToPos(self, argSteps): # argSteps in [steps, steps]
         res0 = round(argSteps[0] / SPR * (2*math.pi) * GEAR[0], PRECISION)
-        res1 = round(GEAR[1] * ( argSteps[1] * math.pi / SPR - res0 / 2), PRECISION)
+        res1 = round(GEAR[1] * ( argSteps[1] * math.pi / SPR + res0 / 2), PRECISION)
         #res11 = round(math.pi * GEAR[1] / SPR * (argSteps[1] - argSteps[0] * GEAR[0]), PRECISION)
         #logging.debug("Comparing calculations: Using steps: " + str(res11) + " using rad: " + str(res1))
         return [res0, res1]
@@ -127,13 +127,10 @@ class thetarho:
             if abs(deltaSteps[0]) >= abs(deltaSteps[1]):    # More steps in THETA than there are in RHO
                 # After how many steps of THETA we step in RHO
                 if deltaSteps[1] != 0:
-                    factorial = math.floor(deltaSteps[0] / deltaSteps[1])
-                    """
-                    if (deltaSteps[0] / deltaSteps[1] >= 0): # eg. round 21.42 down to 21
-                        factorial = math.floor(deltaSteps[0] / deltaSteps[1])
-                    else:                                    # eg. round -2.56 up to -2
+                    if (deltaSteps[0] / deltaSteps[1] >= 0): # eg. round 21.42 up to 22
                         factorial = math.ceil(deltaSteps[0] / deltaSteps[1])
-                    """
+                    else:                                    # eg. round -2.56 down to -3
+                        factorial = math.floor(deltaSteps[0] / deltaSteps[1])
                 else:
                     factorial = math.inf
                 logging.debug(str(factorial) + " times more THETA steps than RHO steps.")
@@ -158,13 +155,10 @@ class thetarho:
             else:  # More steps in RHO than there are in THETA
                    # After how many steps of RHO we step in THETA
                 if deltaSteps[0] != 0:
-                    factorial = math.floor(deltaSteps[1] / deltaSteps[0])
-                    """
-                    if (deltaSteps[1] / deltaSteps[0] >= 0): # eg. round 21.42 down to 21
-                        factorial = math.floor(deltaSteps[1] / deltaSteps[0])
-                    else:                                    # eg. round -2.56 up to -2
+                    if (deltaSteps[1] / deltaSteps[0] >= 0): # eg. round 21.42 up to 22
                         factorial = math.ceil(deltaSteps[1] / deltaSteps[0])
-                    """
+                    else:                                    # eg. round -2.56 down to -3
+                        factorial = math.floor(deltaSteps[1] / deltaSteps[0])
                 else:
                     factorial = math.inf
                 logging.debug(str(factorial) + " times more RHO steps than THETA steps.")
@@ -191,7 +185,13 @@ class thetarho:
             # Due to the unequal number of steps, one of the two axes will not yet be at the target destination. Move single axis to correct this.
             deltaSteps = [(self.tarSteps[0] - self.curSteps[0]), (self.tarSteps[1] - self.curSteps[1])]
             logging.debug("delta: " + str(deltaSteps) + " [steps steps] (loop 2)")
+            
             if deltaSteps[0] != 0:
+                if deltaSteps[0] > 0:   # Differentiate rotation direction based on deltaSteps
+                    GPIO.output(DIR[0], CW)
+                else:
+                    GPIO.output(DIR[0], CCW)
+                sleep(STEP_DELAY)         # Give output time to set. Unsure if necessary
                 for x in range(abs(deltaSteps[0])):
                     GPIO.output(STEP[0], GPIO.HIGH)
                     sleep(STEP_DELAY)
@@ -199,6 +199,11 @@ class thetarho:
                     sleep(STEP_DELAY)
                     self.curSteps[0] += int(sign(deltaSteps[0])) # inrecement or decrement based on direction
             if deltaSteps[1] != 0:
+                if deltaSteps[1] > 0:   # Differentiate rotation direction based on deltaSteps
+                    GPIO.output(DIR[1], CW)
+                else:
+                    GPIO.output(DIR[1], CCW)
+                sleep(STEP_DELAY)         # Give output time to set. Unsure if necessary
                 for x in range(abs(deltaSteps[1])):
                     GPIO.output(STEP[1], GPIO.HIGH)
                     sleep(STEP_DELAY)
