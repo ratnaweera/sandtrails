@@ -17,7 +17,7 @@ TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when c
 
 # Rho Axis
 RH_MAX = 150             # Maximum value for Rho axis in [mm]
-RH_MIN = -5              # Minimum value for Rho axis in [mm]
+RH_MIN = -2              # Minimum value for Rho axis in [mm]
 
 STEP_DELAY = 0.0001      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
@@ -217,8 +217,6 @@ class thetarho:
 
     # Strip the position of the axes to within a +/- 2Pi circle. Affects both THETA and RHO 
     def stripTheta(self):
-        #TODO: Not using this feature until the positioning problems of THETA, RHO are solved.
-        """
         # After an exception, curPos might not be up to date with the curSteps
         self.curPos = self.convertStepsToPos(self.curSteps)
         
@@ -232,5 +230,5 @@ class thetarho:
         #Subtract or add the number of steps that RHO would have corrected in the div number of circles
         self.curSteps[1] += sign(self.curPos[0])*int(div*SPR)
         logging.debug("Pos after stripping 2*pi: " + self.curState())
-        """
+        
         return 0

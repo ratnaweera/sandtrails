@@ -25,18 +25,18 @@ def main():
         logging.info("Steppermotor set up") 
         thetarho = axes.thetarho()
         thetarho.homing()
+        """
+        ROTATION = 2*math.pi
+        thetarho.goTo([0.5*ROTATION, 0.5*axes.RH_MAX])
+        sleep(5)
+        thetarho.goTo([1*ROTATION, 1*axes.RH_MAX])
+        sleep(5)
+        thetarho.goTo([1.25*ROTATION, 0.75*axes.RH_MAX])
+        sleep(5)
         
-        thetarho.goTo([1*2*math.pi, 0.0])
-        sleep(10)
-        """
-        thetarho.goTo([0.5*2*math.pi, 50.0])
-        sleep(5)
-        thetarho.goTo([-0.25*2*math.pi, 0.0])
-        sleep(5)
-        """
         """
         thr_coord = []
-        thr_coord = parse_thr("spiral.thr")
+        thr_coord = parse_thr("3lobes.thr")
         index = 1
         
         for coord in thr_coord:
@@ -45,7 +45,7 @@ def main():
             #sleep(1)
             index += 1
         logging.info("Pattern done!")
-        """
+        
         logging.info("Main loop done")
         sleep(5)
     
