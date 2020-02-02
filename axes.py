@@ -19,7 +19,7 @@ TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when c
 RH_MAX = 150             # Maximum value for Rho axis in [mm]
 RH_MIN = -5              # Minimum value for Rho axis in [mm]
 
-STEP_DELAY = 0.0002      # [s] delay between stepper motor steps (~ 1/"speed")
+STEP_DELAY = 0.0001      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
 
 
@@ -75,17 +75,21 @@ class thetarho:
             #logging.debug("Currently outside tolerance window of " + str(dest))
             return False
     
-    # For a given position in [rad, mm], calculate the corresponding motor steps in [steps, steps]
+    # For a given magnet position in [rad, mm], calculate the corresponding motor position in [steps, steps]
     def convertPosToSteps(self, argPos): # argPos in [rad mm]
         # SPR is steps for 2*math.pi
         res0 = round(argPos[0] * SPR / (2*math.pi) / GEAR[0])
-        res1 = round(argPos[1] * SPR / (2*math.pi) / GEAR[1] - res0 * GEAR[0])	# include rounding of theta
+        res1 = round((argPos[1] / GEAR[1] - argPos[0] / 2 ) * SPR / math.pi)
+        #res11 = round(argPos[1] * SPR / math.pi / GEAR[1] - res0 * GEAR[0])
+        #logging.debug("Comparing calculations: Using steps: " + str(res11) + " using rad: " + str(res1))
         return [res0, res1]
     
-    # For a given steps in [steps, steps], calculate the corresponding position in [rad, mm]
+    # For a given motor position in [steps, steps], calculate the corresponding magnet position in [rad, mm]
     def convertStepsToPos(self, argSteps): # argSteps in [steps, steps]
         res0 = round(argSteps[0] / SPR * (2*math.pi) * GEAR[0], PRECISION)
-        res1 = round((2*math.pi) * GEAR[1] / SPR * (argSteps[1] + argSteps[0] * GEAR[0]), PRECISION)
+        res1 = round(GEAR[1] * ( argSteps[1] * math.pi / SPR - res0 / 2), PRECISION)
+        #res11 = round(math.pi * GEAR[1] / SPR * (argSteps[1] - argSteps[0] * GEAR[0]), PRECISION)
+        #logging.debug("Comparing calculations: Using steps: " + str(res11) + " using rad: " + str(res1))
         return [res0, res1]
     
     # Move axes to reach dest position
@@ -146,7 +150,7 @@ class thetarho:
                     if moveBothAxes:
                         GPIO.output(STEP[1], GPIO.LOW)
                     sleep(STEP_DELAY)
-                    self.curSteps[0] = self.curSteps[0] + int(sign(deltaSteps[0])) # inrecement or decrement based on direction
+                    self.curSteps[0] += int(sign(deltaSteps[0])) # inrecement or decrement based on direction
                     if moveBothAxes:
                         self.curSteps[1] += int(sign(deltaSteps[1])) # inrecement or decrement based on direction
                 self.curPos = self.convertStepsToPos(self.curSteps)
@@ -184,7 +188,6 @@ class thetarho:
             
             logging.debug("Position after double axis move: " + self.curState())
             
-            
             # Due to the unequal number of steps, one of the two axes will not yet be at the target destination. Move single axis to correct this.
             deltaSteps = [(self.tarSteps[0] - self.curSteps[0]), (self.tarSteps[1] - self.curSteps[1])]
             logging.debug("delta: " + str(deltaSteps) + " [steps steps] (loop 2)")
@@ -201,7 +204,7 @@ class thetarho:
                     sleep(STEP_DELAY)
                     GPIO.output(STEP[1], GPIO.LOW)
                     sleep(STEP_DELAY)
-                    self.curSteps[1] +=int(sign(deltaSteps[1])) # inrecement or decrement based on direction
+                    self.curSteps[1] += int(sign(deltaSteps[1])) # inrecement or decrement based on direction
             self.curPos = self.convertStepsToPos(self.curSteps)
             logging.debug("Position after single axis move: " + self.curState())
             
@@ -209,6 +212,8 @@ class thetarho:
 
     # Strip the position of the axes to within a +/- 2Pi circle. Affects both THETA and RHO 
     def stripTheta(self):
+        #TODO: Not using this feature until the positioning problems of THETA, RHO are solved.
+        """
         # After an exception, curPos might not be up to date with the curSteps
         self.curPos = self.convertStepsToPos(self.curSteps)
         
@@ -217,8 +222,10 @@ class thetarho:
         div, remain = divmod(self.curPos[0], sign(self.curPos[0])*2*math.pi)
         logging.debug("Circles: " + str(div) + " remainder: " + str(round(remain, PRECISION)))
         self.curPos[0] = remain
+        
         self.curSteps[0] = round(self.curPos[0] * SPR / (2*math.pi) / GEAR[0])    # SPR is steps for 2*math.pi
         #Subtract or add the number of steps that RHO would have corrected in the div number of circles
         self.curSteps[1] += sign(self.curPos[0])*int(div*SPR)
         logging.debug("Pos after stripping 2*pi: " + self.curState())
+        """
         return 0

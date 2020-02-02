@@ -25,20 +25,18 @@ def main():
         logging.info("Steppermotor set up") 
         thetarho = axes.thetarho()
         thetarho.homing()
+        
+        thetarho.goTo([1*2*math.pi, 0.0])
+        sleep(10)
         """
-        thetarho.goTo([2*math.pi, 0.0])
+        thetarho.goTo([0.5*2*math.pi, 50.0])
         sleep(5)
-        thetarho.goTo([4*math.pi, 0.0])
+        thetarho.goTo([-0.25*2*math.pi, 0.0])
         sleep(5)
-        thetarho.goTo([10*math.pi, 0.0])
-        
-        sleep(2)
-        
+        """
         """
         thr_coord = []
-        #thr_coord = parse_thr("wiper-15.thr")
-        #thr_coord = parse_thr("test-1.thr")
-        thr_coord = parse_thr("spiral-2020-01-25.thr")
+        thr_coord = parse_thr("spiral.thr")
         index = 1
         
         for coord in thr_coord:
@@ -47,7 +45,7 @@ def main():
             #sleep(1)
             index += 1
         logging.info("Pattern done!")
-        
+        """
         logging.info("Main loop done")
         sleep(5)
     
@@ -57,7 +55,7 @@ def main():
         # shut down cleanly
         try: # drive axes to zero
             logging.info("Going back home")
-            
+            sleep(2)
             thetarho.stripTheta()
             thetarho.goTo([0, 0])
         except Exception as error2:
