@@ -27,14 +27,14 @@ def main():
         thetarho.homing()
         """
         ROTATION = 2*math.pi
-        thetarho.goTo([0.5*ROTATION, 0.5*axes.RH_MAX])
+        thetarho.goTo([-0.1*ROTATION, 1*axes.RH_MAX])
         sleep(5)
-        thetarho.goTo([1*ROTATION, 1*axes.RH_MAX])
+        thetarho.goTo([0.1*ROTATION, 1*axes.RH_MAX])
         sleep(5)
-        thetarho.goTo([1.25*ROTATION, 0.75*axes.RH_MAX])
+        thetarho.goTo([0*ROTATION, 0.75*axes.RH_MAX])
         sleep(5)
-        
         """
+        
         thr_coord = []
         thr_coord = parse_thr("3lobes.thr")
         index = 1
@@ -49,8 +49,8 @@ def main():
         logging.info("Main loop done")
         sleep(5)
     
-    except Exception as error:
-        logging.error("Exception occured: " + str(error))
+    except Exception as err:
+        logging.error("Exception occured: " + str(err))
     finally:
         # shut down cleanly
         try: # drive axes to zero
