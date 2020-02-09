@@ -311,5 +311,7 @@ class thetarho:
             sleep(5)
         else:
             raise RuntimeError("Homing: Both homing switches for THETA are either active or inactive.")
-       
+        #TODO: Home RHO axis
+        logging.info("TODO: Home RHO axis (not yet implemented)")
         self.runState = HOMED
+        logging.info("Homing: Setting runState = HOMED")
