@@ -1,11 +1,17 @@
-from flask import Flask, render_template
-import axes
+# Import of standard packages
 from time import sleep
 import math
 import logging          # for debug messages
 import sys
 import csv
 import threading
+
+# Imports for Flask
+from flask import Flask, render_template, flash, redirect, url_for
+from forms import SandtrailsForm
+
+# Import of own classes
+import axes
 
 event_shutdown = threading.Event()
 event_start = threading.Event()
@@ -40,7 +46,7 @@ def sandtrails(eShutdown, eStart, eStop):
                 eStart.clear() #clear the event, not sure if this works as intended
                 
                 thr_coord = []
-                thr_coord = parse_thr("spiral.thr")
+                thr_coord = parse_thr("tracks/spiral.thr")
                 index = 1
                 
                 for coord in thr_coord:
@@ -69,36 +75,44 @@ def sandtrails(eShutdown, eStart, eStop):
             logging.error("Could not drive axes back to zero. Careful on next run, might hit physical limits")
         finally:
             axes.GPIO.cleanup()
-            logging.info("GPIO cleanup performed")
+            logging.debug("GPIO cleanup performed")
+            logging.info("Sandtrails ended. Press Ctrl+C to quit app.")
 
-# Flask setup
 app = Flask(__name__)
+app.config.from_object('config.Config')
 
-@app.route('/')
+@app.route('/', methods=('GET', 'POST'))
 def index():
-    return render_template('index.html')
+    formInstance = SandtrailsForm()
+    if formInstance.validate_on_submit():
+        flash('Starting track {}'.format(formInstance.track.data))
+        return redirect(url_for('start'))
+    return render_template('index.html', form=formInstance)
 
 @app.route('/shutdown')
 def shutdown():
     event_shutdown.set()
     event_start.clear()
     event_stop.clear()
-    return render_template('index.html')
+    formInstance = SandtrailsForm()
+    return render_template('index.html', form=formInstance)
 
 @app.route('/start')
 def start():
     event_shutdown.clear()
     event_start.set()
     event_stop.clear()
-    return render_template('index.html')
+    formInstance = SandtrailsForm()
+    return render_template('index.html', form=formInstance)
 
 @app.route('/stop')
 def stop():
+    flash('Stopping current track')
     event_shutdown.clear()
     event_start.clear()
     event_stop.set()
-    return render_template('index.html')
-
+    formInstance = SandtrailsForm()
+    return render_template('index.html', form=formInstance)
 
 if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
@@ -114,4 +128,4 @@ if __name__ == '__main__':
         logging.info("Started main sandtrails thread.")
         app.run(debug=False, host='0.0.0.0')
         mainThread.join()
-        logging.info("Joined main thread. Exiting.")
+        logging.info("Exited cleanly")
