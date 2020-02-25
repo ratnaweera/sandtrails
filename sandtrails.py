@@ -74,7 +74,7 @@ def sandtrails(eShutdown, eStart, eStop):
             logging.error("Exception occured: " + str(error2))
             logging.error("Could not drive axes back to zero. Careful on next run, might hit physical limits")
         finally:
-            axes.GPIO.cleanup()
+            axes.cleanup()
             logging.debug("GPIO cleanup performed")
             logging.info("Sandtrails ended. Press Ctrl+C to quit app.")
 
