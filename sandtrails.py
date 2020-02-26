@@ -19,6 +19,7 @@ event_start = threading.Event()
 event_stop = threading.Event()
 
 playlist = []
+playlist_looping = False
 lock = threading.Lock()
 
 def parse_thr(thrfilename):
@@ -53,35 +54,48 @@ def sandtrails(eShutdown, eStart, eStop):
                 playlist_length = len(playlist)
                 lock.release()
                 
-                for i in range(playlist_length):
-
-                    lock.acquire()
-                    thr_file = playlist[i]
-                    lock.release()
-                    
-                    thr_coord = []
-                    thr_coord = parse_thr(os.path.join("tracks", thr_file))
-
-                    logging.info("Starting pattern: " + thr_file)
-
-                    index = 1
-                    
-                    for coord in thr_coord:
-                        logging.info("Go to " + str(round(float(coord[0]), 5)) + " " + str(round(float(coord[1])*axes.RH_MAX, 5)) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
-                        thetarho.goTo([float(coord[0]), float(coord[1])*axes.RH_MAX])
-                        index += 1
-                        if eStop.isSet():
-                            logging.info("Stop signal set, exiting pattern")
-                            break
-                
-                    logging.info("Pattern done!")
+                while True:
+                    for i in range(playlist_length):
+                        lock.acquire()
+                        thr_file = playlist[i]
+                        lock.release()
+                        
+                        thr_coord = []
+                        thr_coord = parse_thr(os.path.join("tracks", thr_file))
     
+                        logging.info("Starting pattern: " + thr_file)
+    
+                        index = 1
+                        
+                        for coord in thr_coord:
+                            logging.info("Go to " + str(round(float(coord[0]), 5)) + " " + str(round(float(coord[1])*axes.RH_MAX, 5)) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
+                            thetarho.goTo([float(coord[0]), float(coord[1])*axes.RH_MAX])
+                            index += 1
+                            if eStop.isSet():
+                                logging.info("Stop signal set, exiting pattern")
+                                break
+                    
+                        logging.info("Pattern done!")
+        
+                        if eStop.isSet():
+                            logging.info("Stop signal set, exiting playlist")
+                            break
+    
+                    logging.info("Playlist done!")
+                
                     if eStop.isSet():
-                        logging.info("Stop signal set, exiting playlist")
                         eStop.clear()
                         break
-
-                logging.info("Playlist done!")
+                    
+                    lock.acquire()
+                    restart = playlist_looping
+                    lock.release()
+                    
+                    if restart:
+                        logging.info("Playlist looping enabled. Restarting!")
+                    else:
+                        break
+                
                 
         logging.info("Main loop shutting down")
     
@@ -124,11 +138,14 @@ def shutdown():
 @app.route('/start', methods=['POST'])
 def start():
     newplaylist = list(filter(None, request.form['newplaylist'].split(';')))
-    logging.info('Request to start new playlist: ' + str(newplaylist))
+    newplaylist_looping = request.form['loop'].lower() == "true"
+    logging.info('Request to start new playlist: ' + str(newplaylist) + ', looping = ' + str(newplaylist_looping))
     flash('Starting new playlist: ' + str(newplaylist))
     global playlist
+    global playlist_looping
     lock.acquire()
     playlist = newplaylist
+    playlist_looping = newplaylist_looping
     lock.release()
     event_shutdown.clear()
     event_start.set()
@@ -163,11 +180,18 @@ def upload():
         logging.info('Successfully stored file: ' + filename)
     return render_template('index.html')
 
+@app.route('/lighting', methods=['POST'])
+def set_lighting():
+    lighting = request.form['light_color']
+    logging.info('Request to set lighting: ' + lighting)
+    flash('Setting new lighting: ' + lighting)
+    return render_template('index.html', **get_dynamic_fields())
+
 if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
     dateFormat = "%H:%H:%S"
     #logging.basicConfig(filename='sandtrails.log', level=logging.INFO, format=msgFormat, datefmt=dateFormat)
-    logging.basicConfig(level=logging.DEBUG, format=msgFormat, datefmt=dateFormat)
+    logging.basicConfig(level=logging.INFO, format=msgFormat, datefmt=dateFormat)
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")
     else:
@@ -175,6 +199,6 @@ if __name__ == '__main__':
         mainThread = threading.Thread(name='sandtrailsMain', target=sandtrails, args=(event_shutdown, event_start, event_stop,))
         mainThread.start()
         logging.info("Started main sandtrails thread.")
-        app.run(debug=True, host='0.0.0.0')
+        app.run(debug=False, host='0.0.0.0')
         mainThread.join()
         logging.info("Exited cleanly")

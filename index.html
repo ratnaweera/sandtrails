@@ -41,11 +41,11 @@
             <div class="col-lg-8 mx-auto">
                 <h1>Lighting</h1>
                 <p id="lighting_quote">Put your art into the right light</p>
-                <form method="POST" action="/" novalidate="">
+                <form method="POST" action="/lighting" novalidate="">
                     <div class="form-row">
                         <div class="col align-self-center"><label class="col-form-label" id="colorpicker_label" for="colorpicker">LED color:&nbsp;</label></div>
-                        <div class="col-1 align-self-center"><input type="color" id="colorpicker"></div>
-                        <div class="col"><button class="btn btn-primary btn-lg btn-default" id="light_button" type="button">Set</button></div>
+                        <div class="col-1 align-self-center"><input type="color" id="colorpicker" name="light_color"></div>
+                        <div class="col"><button class="btn btn-primary btn-lg btn-default" id="light_button" type="submit">Set</button></div>
                     </div>
                 </form>
             </div>
