@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Home - Brand</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cabin:700">
+    <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body id="page-top">
+    <nav class="navbar navbar-light navbar-expand-md navbar navbar-expand-lg fixed-top" id="mainNav">
+        <div class="container"><a class="navbar-brand js-scroll-trigger" href="#"><img src="assets/img/logo_white.svg" style="height: 36px;"></a><button data-toggle="collapse" class="navbar-toggler navbar-toggler-right" data-target="#navbarResponsive" type="button" aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation" value="Menu"><i class="fa fa-bars"></i></button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="nav navbar-nav ml-auto">
+                    <li class="nav-item nav-link js-scroll-trigger" role="presentation"><a class="nav-link active js-scroll-trigger" href="#lighting">Lighting</a></li>
+                    <li class="nav-item nav-link js-scroll-trigger" role="presentation"><a class="nav-link js-scroll-trigger" href="#tracks">Tracks</a></li>
+                    <li class="nav-item nav-link js-scroll-trigger" role="presentation"><a class="nav-link js-scroll-trigger" href="#setup">Setup</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <header class="masthead" style="background-image:url('assets/img/spiral_and_marble.png');">
+        <div class="intro-body">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <h1 class="brand-heading">SANDTRAILS</h1>
+                        <p class="intro-text">You can't leave footprints in the sands of time while sitting down.&nbsp;&nbsp;&nbsp;<br><span id="author">[Nelson Rockefeller]</span></p><a class="btn btn-link btn-circle" role="button" href="#lighting"><i class="fa fa-angle-double-down animated"></i></a></div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <section id="lighting" class="content-section text-center">
+        <div class="container">
+            <div class="col-lg-8 mx-auto">
+                <h1>Lighting</h1>
+                <p id="lighting_quote">Put your art into the right light</p>
+                <form method="POST" action="/" novalidate="">
+                    <div class="form-row">
+                        <div class="col align-self-center"><label class="col-form-label" id="colorpicker_label" for="colorpicker">LED color:&nbsp;</label></div>
+                        <div class="col-1 align-self-center"><input type="color" id="colorpicker"></div>
+                        <div class="col"><button class="btn btn-primary btn-lg btn-default" id="light_button" type="button">Set</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <section id="tracks" class="download-section content-section text-center" style="background-image:url('assets/img/spiral.jpg');">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h2>Tracks</h2>
+                    <div class="row">
+                        <div class="col-5">
+                            <div class="row">
+                                <div class="col">
+                                    <h3>Library</h3>
+                                </div>
+                            </div>
+                            <div class="row">
+                            <div class="row">
+                                <div class="col bloc">
+																	{% if tracks %}
+																	<div id="tracks_list" class="fancy_list">
+																		{% for track in tracks %}
+																		<a class="list-group-item list-group-item-action" href="#">{{ track }}</a>
+																		{% endfor %}
+																	</div>
+																	{% endif %}
+                                </div>
+                            </div>
+                            </div>
+                            <div class="row">
+                                <div class="col custom-file" id="file_uploader">
+                                    <form id="file_uploader_form" method="POST" action="/upload" enctype="multipart/form-data"><label id="file_upload_label" class="custom-file-label" for="file_upload">Upload file...</label><input type="file" id="file_upload" class="custom-file-input" name="file"></form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <div class="row">
+                                <div class="col">
+                                    <h3>Playlist</h3>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div id="playlist" class="fancy_list"></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-check" id="loop_playlist"><input class="form-check-input" type="checkbox" id="loop_checkbox"><label class="form-check-label" for="loop_checkbox">Loop</label></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-2 align-self-center"><button class="btn btn-primary btn-block btn-default" id="start_button" type="button">Start</button><button class="btn btn-primary btn-block btn-default" id="stop_button" type="button">Stop</button></div>
+                    </div>
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div class="row">
+                      <div class="col" id="messages">
+												<h3>Messages</h3>
+                          <ul class="fancy_list">
+                            {% for message in messages %}
+                            <li>{{ message }}</li>
+                            {% endfor %}
+                          </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="map-clean"></div>
+    <footer>
+        <div class="container text-center">
+            <p>by Roman Ratnaweera &amp; Stephan Lütolf, 2020</p>
+        </div>
+    </footer>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script src="assets/js/grayscale.js"></script>
+    <script src="assets/js/frontend.js"></script>
+</body>
+
+</html>
