@@ -30,7 +30,7 @@ $("#stop_button").on("click", function(){
 });
 
 $("#file_upload").change(function(){
-    alert("new file: " + this.files[0].name);
+    //alert("new file: " + this.files[0].name);
     var form = document.getElementById("file_uploader_form");
     form.submit();
 });
