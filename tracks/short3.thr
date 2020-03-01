@@ -1,0 +1,35 @@
+# Created by Sandify
+# 
+#   https://sandify.org
+# 
+#   Sandify Version: 0.1.5
+# 
+#   Machine Type: Polar
+#     Max Radius: 150
+#     Force Endpoints: true
+#   Content Type: Shapes
+#     Starting Size: 12
+#     Offset: X: 0 Y: 0
+#     Selected Shape: Circle
+#       Circle Lobes: 3
+#     Number of Loops: 20
+#     Spin: true
+#       Spin Value: 2
+#       Spin Switchbacks: 0
+#     Grow: true
+#       Grow Value: 100
+#     Track: false
+#   Path Reversed: false
+# 
+# filename: '3lobes'
+
+# BEGIN PRE
+# END PRE
+
+0.00000 0.00000
+0.17080 0.01333
+0.27080 0.02667
+0.37080 0.04000
+
+# BEGIN POST
+# END POST
