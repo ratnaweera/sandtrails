@@ -1,0 +1,75 @@
+#author {
+  font-size: small;
+  font-style: italic;
+}
+
+body {
+  font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+}
+
+h3 {
+  text-transform: none;
+}
+
+.fancy_list {
+  max-height: 10rem;
+  height: 10rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  padding: 1rem;
+  background-color: rgba(49,55,58,0.6);
+  text-align: left;
+}
+
+.fancy_list a {
+  height: 2rem;
+  padding-top: 0.25rem;
+  background-color: rgba(255,255,255,0.49);
+}
+
+#file_uploader {
+  margin-left: 15px /* compensate that the column padding is somehow lost*/;
+  margin-right: 15px;
+  margin-top: 1rem;
+}
+
+#file_upload_label {
+  text-align: left;
+  background-color: rgba(49,55,58,0.6);
+  color: #ffffff;
+  border: none;
+}
+
+#loop_playlist {
+  float: right;
+  margin-top: 5px;
+  margin-right: 5px;
+}
+
+#colorpicker_label {
+  float: right;
+}
+
+#colorpicker {
+  border-style: none;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  outline-style: none;
+  outline-width: 0px;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0.1rem;
+}
+
+#messages {
+  margin-top: 3rem;
+}
+
+#light_button {
+  float: left;
+  margin-left: 3rem;
+  margin-bottom: 6px;
+}
+
