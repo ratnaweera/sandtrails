@@ -127,7 +127,7 @@ def get_dynamic_fields():
 def index():
     return render_template('index.html', **get_dynamic_fields())
 
-@app.route('/shutdown', methods=['POST'])
+@app.route('/shutdown', methods=['GET'])
 def shutdown():
     logging.info('Request to shutdown')
     event_shutdown.set()

@@ -58,7 +58,7 @@ def setup_steppermotors():
     GPIO.output(MODE[0], RESOLUTION['1/32'])
     GPIO.output(MODE[1], RESOLUTION['1/32'])
 
-def cleanup(self):
+def cleanup():
     GPIO.cleanup()
     
 class thetarho:
