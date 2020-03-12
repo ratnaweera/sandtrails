@@ -1,6 +1,5 @@
 # Import of standard packages
 from time import sleep
-import math
 import logging          # for debug messages
 import sys
 import csv
@@ -8,7 +7,7 @@ import threading
 import os
 
 # Imports for Flask
-from flask import Flask, render_template, flash, redirect, request, url_for
+from flask import Flask, render_template, flash, redirect, request, jsonify
 from werkzeug.utils import secure_filename
 
 # Import of own classes
@@ -20,6 +19,7 @@ event_stop = threading.Event()
 
 playlist = []
 playlist_looping = False
+playlist_status = 'stopped'
 lock = threading.Lock()
 
 def parse_thr(thrfilename):
@@ -44,8 +44,10 @@ def sandtrails(eShutdown, eStart, eStop):
         thetarho = axes.thetarho()
         thetarho.homing()
         
+        logging.info("Waiting for start")
+        
         while not eShutdown.isSet():
-            logging.info("Waiting for start")
+            logging.debug("Still waiting for start")
             sleep(1)
             if eStart.isSet():
                 eStart.clear() #clear the event, not sure if this works as intended
@@ -97,6 +99,12 @@ def sandtrails(eShutdown, eStart, eStop):
                         break
                 
                 
+                global playlist_status
+                lock.acquire()
+                playlist_status = 'stopped'
+                lock.release()
+
+                
         logging.info("Main loop shutting down")
     
     except Exception as err:
@@ -127,6 +135,15 @@ def get_dynamic_fields():
 def index():
     return render_template('index.html', **get_dynamic_fields())
 
+@app.route('/status', methods=['GET'])
+def status():
+    logging.debug('Request for status')
+    lock.acquire()
+    d = dict(status=playlist_status)
+    lock.release()
+    logging.debug('Status is: ' + str(d))
+    return jsonify(d)
+
 @app.route('/shutdown', methods=['GET'])
 def shutdown():
     logging.info('Request to shutdown')
@@ -143,7 +160,9 @@ def start():
     flash('Starting new playlist: ' + str(newplaylist))
     global playlist
     global playlist_looping
+    global playlist_status
     lock.acquire()
+    playlist_status = 'running'
     playlist = newplaylist
     playlist_looping = newplaylist_looping
     lock.release()
@@ -156,6 +175,10 @@ def start():
 def stop():
     logging.info('Request to stop')
     flash('Stopping current track')
+    lock.acquire()
+    global playlist_status
+    playlist_status = "stopping"
+    lock.release()
     event_shutdown.clear()
     event_start.clear()
     event_stop.set()
