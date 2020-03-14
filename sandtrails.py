@@ -2,9 +2,7 @@
 from time import sleep
 import logging          # for debug messages
 import sys
-import csv
 import threading
-import os
 
 # Imports for Flask
 from flask import Flask, render_template, flash, redirect, request, jsonify
@@ -12,6 +10,9 @@ from werkzeug.utils import secure_filename
 
 # Import of own classes
 import axes
+from tracks import tracks
+
+tracks = tracks("tracks")
 
 event_shutdown = threading.Event()
 event_start = threading.Event()
@@ -21,18 +22,6 @@ playlist = []
 playlist_looping = False
 playlist_status = 'stopped'
 lock = threading.Lock()
-
-def parse_thr(thrfilename):
-    logging.info("Parsing file: " + thrfilename)
-    tmp_coord = []
-    with open(thrfilename) as csvfile:
-        readCSV = csv.reader(csvfile, delimiter=' ')
-        for row in readCSV:
-            if row:
-                if row[0] != "#":
-                    tmp_coord.append([row[0] , row[1]]) 
-    logging.info("Parsing completed")
-    return(tmp_coord)
 
 
 def sandtrails(eShutdown, eStart, eStop):
@@ -62,8 +51,7 @@ def sandtrails(eShutdown, eStart, eStop):
                         thr_file = playlist[i]
                         lock.release()
                         
-                        thr_coord = []
-                        thr_coord = parse_thr(os.path.join("tracks", thr_file))
+                        thr_coord = tracks.parse_thr(thr_file)
     
                         logging.info("Starting pattern: " + thr_file)
     
@@ -127,8 +115,7 @@ app = Flask(__name__, template_folder=".", static_folder="assets")
 app.config.from_object('config.Config')
 
 def get_dynamic_fields():
-    tracks = os.listdir("./tracks");
-    d = dict(tracks=tracks)
+    d = dict(tracks=tracks.list())
     return d
 
 @app.route('/', methods=['GET', 'POST'])
@@ -198,9 +185,7 @@ def upload():
         flash('No selected file')
         return redirect(request.url)
     if file:
-        filename = os.path.join('tracks', secure_filename(file.filename))
-        file.save(filename)
-        logging.info('Successfully stored file: ' + filename)
+        tracks.store(file, secure_filename(file.filename))
     return render_template('index.html')
 
 @app.route('/lighting', methods=['POST'])
