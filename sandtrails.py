@@ -1,5 +1,5 @@
 # Import of standard packages
-import logging          # for debug messages
+import logging
 import sys
 import threading
 
@@ -12,6 +12,7 @@ from tracks import Tracks
 from playlist import Playlist
 from hardware import Hardware
 
+# Initializations
 tracks = Tracks("tracks")
 playlist = Playlist()
 hardware = Hardware(tracks, playlist)
@@ -20,12 +21,11 @@ event_start = threading.Event()
 event_stop = threading.Event()
 event_shutdown = threading.Event()
 
+# Creating the web server
 app = Flask(__name__, template_folder=".", static_folder="assets")
 app.config.from_object('config.Config')
 
-def get_dynamic_fields():
-    d = dict(tracks=tracks.list())
-    return d
+# Definition of all the server routings
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -92,6 +92,12 @@ def set_lighting():
     flash('Setting new lighting: ' + lighting)
     return render_template('index.html', **get_dynamic_fields())
 
+def get_dynamic_fields():
+    d = dict(tracks=tracks.list())
+    return d
+
+
+# Starting the hardware controller loop in a new thread, then run the web server in this thread
 if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
     dateFormat = "%H:%H:%S"
@@ -100,7 +106,6 @@ if __name__ == '__main__':
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")
     else:
-        
         mainThread = threading.Thread(name='sandtrailsMain', target=hardware.run, args=(event_start, event_stop, event_shutdown))
         mainThread.start()
         logging.info("Started main sandtrails thread.")
