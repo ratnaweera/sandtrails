@@ -1,5 +1,4 @@
 # Import of standard packages
-from time import sleep
 import logging          # for debug messages
 import sys
 import threading
@@ -9,93 +8,17 @@ from flask import Flask, render_template, flash, redirect, request, jsonify
 from werkzeug.utils import secure_filename
 
 # Import of own classes
-import axes
 from tracks import Tracks
-from playlist import Playlist, Status
+from playlist import Playlist
+from hardware import Hardware
 
 tracks = Tracks("tracks")
 playlist = Playlist()
+hardware = Hardware(tracks, playlist)
 
-event_shutdown = threading.Event()
 event_start = threading.Event()
 event_stop = threading.Event()
-
-
-
-def sandtrails(eShutdown, eStart, eStop):
-    logging.info("Starting sandtrails ")
-    try:
-        axes.setup_steppermotors()
-       
-        logging.info("Steppermotor set up") 
-        thetarho = axes.thetarho()
-        thetarho.homing()
-        
-        logging.info("Waiting for start")
-        
-        while not eShutdown.isSet():
-            logging.debug("Still waiting for start")
-            sleep(1)
-            if eStart.isSet():
-                eStart.clear() #clear the event, not sure if this works as intended
-                
-                while True:
-                    while True:
-                        thr_file = playlist.get_next()
-                        if thr_file is None:
-                            break
-                        
-                        thr_coord = tracks.parse_thr(thr_file)
-                        logging.info("Starting pattern: " + thr_file)
-    
-                        index = 1
-                        
-                        for coord in thr_coord:
-                            logging.info("Go to " + str(round(float(coord[0]), 5)) + " " + str(round(float(coord[1])*axes.RH_MAX, 5)) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
-                            thetarho.goTo([float(coord[0]), float(coord[1])*axes.RH_MAX])
-                            index += 1
-                            if eStop.isSet():
-                                logging.info("Stop signal set, exiting pattern")
-                                break
-                    
-                        logging.info("Pattern done!")
-        
-                        if eStop.isSet():
-                            logging.info("Stop signal set, exiting playlist")
-                            break
-    
-                    logging.info("Playlist done!")
-                
-                    if eStop.isSet():
-                        eStop.clear()
-                        break
-                    
-                    if playlist.is_looping_enabled():
-                        logging.info("Playlist looping enabled. Restarting!")
-                    else:
-                        break
-                
-                
-                playlist.set_status(Status.stopped)
-
-                
-        logging.info("Main loop shutting down")
-    
-    except Exception as err:
-        logging.error("Exception occured: " + str(err))
-    finally:
-        # shut down cleanly
-        try: # drive axes to zero
-            logging.info("Going back home")
-            thetarho.stripTheta()
-            thetarho.goTo([0, 0])
-        except Exception as error2:
-            logging.error("Exception occured: " + str(error2))
-            logging.error("Could not drive axes back to zero. Careful on next run, might hit physical limits")
-        finally:
-            axes.cleanup()
-            logging.debug("GPIO cleanup performed")
-            logging.info("Sandtrails ended. Press Ctrl+C to quit app.")
+event_shutdown = threading.Event()
 
 app = Flask(__name__, template_folder=".", static_folder="assets")
 app.config.from_object('config.Config')
@@ -178,7 +101,7 @@ if __name__ == '__main__':
         logging.critical("Must use Python 3")
     else:
         
-        mainThread = threading.Thread(name='sandtrailsMain', target=sandtrails, args=(event_shutdown, event_start, event_stop,))
+        mainThread = threading.Thread(name='sandtrailsMain', target=hardware.run, args=(event_start, event_stop, event_shutdown))
         mainThread.start()
         logging.info("Started main sandtrails thread.")
         app.run(debug=False, host='0.0.0.0')
