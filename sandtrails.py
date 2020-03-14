@@ -11,17 +11,15 @@ from werkzeug.utils import secure_filename
 # Import of own classes
 import axes
 from tracks import Tracks
+from playlist import Playlist, Status
 
 tracks = Tracks("tracks")
+playlist = Playlist()
 
 event_shutdown = threading.Event()
 event_start = threading.Event()
 event_stop = threading.Event()
 
-playlist = []
-playlist_looping = False
-playlist_status = 'stopped'
-lock = threading.Lock()
 
 
 def sandtrails(eShutdown, eStart, eStop):
@@ -41,18 +39,13 @@ def sandtrails(eShutdown, eStart, eStop):
             if eStart.isSet():
                 eStart.clear() #clear the event, not sure if this works as intended
                 
-                lock.acquire()
-                playlist_length = len(playlist)
-                lock.release()
+                playlist_length = playlist.length()
                 
                 while True:
                     for i in range(playlist_length):
-                        lock.acquire()
-                        thr_file = playlist[i]
-                        lock.release()
-                        
+
+                        thr_file = playlist.get_item(i)
                         thr_coord = tracks.parse_thr(thr_file)
-    
                         logging.info("Starting pattern: " + thr_file)
     
                         index = 1
@@ -77,20 +70,13 @@ def sandtrails(eShutdown, eStart, eStop):
                         eStop.clear()
                         break
                     
-                    lock.acquire()
-                    restart = playlist_looping
-                    lock.release()
-                    
-                    if restart:
+                    if playlist.is_looping_enabled():
                         logging.info("Playlist looping enabled. Restarting!")
                     else:
                         break
                 
                 
-                global playlist_status
-                lock.acquire()
-                playlist_status = 'stopped'
-                lock.release()
+                playlist.set_status(Status.stopped)
 
                 
         logging.info("Main loop shutting down")
@@ -125,9 +111,7 @@ def index():
 @app.route('/status', methods=['GET'])
 def status():
     logging.debug('Request for status')
-    lock.acquire()
-    d = dict(status=playlist_status)
-    lock.release()
+    d = dict(status=playlist.get_status_string())
     logging.debug('Status is: ' + str(d))
     return jsonify(d)
 
@@ -145,14 +129,7 @@ def start():
     newplaylist_looping = request.form['loop'].lower() == "true"
     logging.info('Request to start new playlist: ' + str(newplaylist) + ', looping = ' + str(newplaylist_looping))
     flash('Starting new playlist: ' + str(newplaylist))
-    global playlist
-    global playlist_looping
-    global playlist_status
-    lock.acquire()
-    playlist_status = 'running'
-    playlist = newplaylist
-    playlist_looping = newplaylist_looping
-    lock.release()
+    playlist.start_new(newplaylist, newplaylist_looping)
     event_shutdown.clear()
     event_start.set()
     event_stop.clear()
@@ -162,10 +139,7 @@ def start():
 def stop():
     logging.info('Request to stop')
     flash('Stopping current track')
-    lock.acquire()
-    global playlist_status
-    playlist_status = "stopping"
-    lock.release()
+    playlist.stop()
     event_shutdown.clear()
     event_start.clear()
     event_stop.set()
