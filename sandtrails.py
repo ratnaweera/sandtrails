@@ -10,9 +10,9 @@ from werkzeug.utils import secure_filename
 
 # Import of own classes
 import axes
-from tracks import tracks
+from tracks import Tracks
 
-tracks = tracks("tracks")
+tracks = Tracks("tracks")
 
 event_shutdown = threading.Event()
 event_start = threading.Event()

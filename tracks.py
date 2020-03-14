@@ -2,7 +2,7 @@ import logging
 import csv
 import os
 
-class tracks:
+class Tracks:
 
     def __init__(self, thrdir):
         self.dir = thrdir
