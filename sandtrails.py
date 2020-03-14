@@ -39,12 +39,12 @@ def sandtrails(eShutdown, eStart, eStop):
             if eStart.isSet():
                 eStart.clear() #clear the event, not sure if this works as intended
                 
-                playlist_length = playlist.length()
-                
                 while True:
-                    for i in range(playlist_length):
-
-                        thr_file = playlist.get_item(i)
+                    while True:
+                        thr_file = playlist.get_next()
+                        if thr_file is None:
+                            break
+                        
                         thr_coord = tracks.parse_thr(thr_file)
                         logging.info("Starting pattern: " + thr_file)
     

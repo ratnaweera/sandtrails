@@ -10,12 +10,14 @@ class Playlist:
         self.list = []
         self.is_looping = False
         self.status = Status.stopped
+        self.i = 0
 
     def start_new(self, playlist, looping):
         with lock:
-            self.status = Status.running
             self.list = playlist
             self.looping = looping
+            self.status = Status.running
+            self.i = 0
 
     def stop(self):
         with lock:
@@ -24,13 +26,16 @@ class Playlist:
     def is_looping_enabled(self):
         return self.is_looping
     
-    def length(self):
+    def get_next(self):
+        """Iterates through the playlist, i.e. returns the first item when called first 
+        and the next items in subsequent calls. Returns None when reaching the end of the playlist."""
         with lock:
-            return len(self.list)
-    
-    def get_item(self, i):
-        with lock:
-            return self.list[i]
+            if self.i < len(self.list):
+                item = self.list[self.i]
+                self.i += 1
+                return item
+            else:
+                return None
         
     def set_status(self, status):
         with lock:
