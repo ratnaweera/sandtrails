@@ -12,6 +12,12 @@ import Adafruit_GPIO.SPI as SPI
 SPI_PORT   = 0
 SPI_DEVICE = 0
 
+# Scale all the color values. 1 = no reduction, 0 = dark
+BRIGHTNESS_REDUCTION = 0.5
+
+def clamp(n, minn, maxn):
+    return max(min(maxn, n), minn)
+
 
 class Leds:
  
@@ -29,16 +35,30 @@ class Leds:
         return self.pixels.count()
     
     def set(self, i, r, g, b):
-        self.pixels.set_pixel(i, Adafruit_WS2801.RGB_to_color(r, g, b))
+        rl, gl, bl = Leds.adjustBrightness(r, g, b, BRIGHTNESS_REDUCTION)
+        self.pixels.set_pixel(i, Adafruit_WS2801.RGB_to_color(rl, gl, bl))
+
+    @staticmethod
+    def clampRGB(r, g, b):
+        return (clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255))
     
+    @staticmethod
+    def adjustBrightness(r, g, b, factor):
+        return Leds.clampRGB(r * factor, g * factor, b * factor)
+        
     def update(self):
         self.pixels.show()
                 
  
 if __name__ == "__main__":
     
-    led = Leds(55)
+    assert Leds.adjustBrightness(100, 200, 300, 0.5) == (50, 100, 150)
+    assert Leds.adjustBrightness(100, 200, 300, 1.0) == (100, 200, 255)
+
+    led = Leds(10)
     led.init()
     led.set(0, 50, 0, 0)
+    led.set(1, 0, 50, 0)
+    led.set(2, 0, 0, 50)
     led.update()
     led.finalize()

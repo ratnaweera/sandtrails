@@ -7,12 +7,28 @@ Blurring between the section's color can be enabled.
 
 from ledemulator import LedEmulator
 from color import Color
-   
+
+
+DEFAULT_COLOR = Color(0, 0, 0)
+
     
 class Section:
     
-    def __init__(self, r, g, b):
-        self.color = Color(r, g, b)
+    def __init__(self, nr, color):
+        self.nr = nr
+        self.color = color
+    
+    @classmethod
+    def fromRGB(cls, nr, r, g, b):
+        return Section(nr, Color(r, g, b))
+    
+    @classmethod
+    def fromColor(cls, nr, color):
+        return Section(nr, color)
+    
+    @classmethod
+    def fromHex(cls, nr, hexcode):
+        return Section(nr, Color.fromHex(hexcode))
     
         
 class LedConfig:
@@ -20,6 +36,8 @@ class LedConfig:
     def __init__(self, hw):
         self.hw = hw
         self.nrOfPixels = hw.getNrOfPixels()
+        self.list = [Section.fromColor(1, DEFAULT_COLOR)]
+        self.blur = False
     
     def init(self):
         self.hw.init();
@@ -31,7 +49,10 @@ class LedConfig:
         self.list = sectionList
         self.blur = blur
         self.update()
-        
+
+    def getSectionList(self):
+        return self.list
+                
     def update(self):
         for i in range(self.nrOfPixels):
             color = self.getColor(i)
@@ -49,7 +70,7 @@ class LedConfig:
         if self.blur:
             nextSection = self.list[(sectionNr + 1) % len(self.list)]
             interpolatedColor = section.color.interpolate(nextSection.color, fraction)
-            print(str(fraction) + " " + str(section.color) + " " + str(nextSection.color) + " -> " + str(interpolatedColor))
+            #print(str(fraction) + " " + str(section.color) + " " + str(nextSection.color) + " -> " + str(interpolatedColor))
             return interpolatedColor
         else:
             return section.color
@@ -61,7 +82,7 @@ if __name__ == "__main__":
     ledConfig = LedConfig(ledEmulator)
     ledConfig.init()
     
-    sectionList = (Section(255, 0, 0), Section(0, 255, 0), Section(255, 0, 255))
+    sectionList = (Section.fromRGB(1, 255, 0, 0), Section.fromRGB(2, 0, 255, 0), Section.fromRGB(3, 255, 0, 255))
     ledConfig.setSectionList(sectionList, True)
     ledConfig.update()
 
