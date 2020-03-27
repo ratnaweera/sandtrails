@@ -2,6 +2,7 @@
 import logging
 import sys
 import threading
+import re
 
 # Imports for Flask
 from flask import Flask, render_template, flash, redirect, request, jsonify
@@ -11,11 +12,17 @@ from werkzeug.utils import secure_filename
 from tracks import Tracks
 from playlist import Playlist
 from hardware import Hardware
+from ledconfig import LedConfig, Section
+#from ledemulator import LedEmulator
+from led import Leds
 
 # Initializations
 tracks = Tracks("tracks")
 playlist = Playlist()
 hardware = Hardware(tracks, playlist)
+ledHw = Leds(64)
+#ledHw = LedEmulator(64)
+ledConfig = LedConfig(ledHw)
 
 event_start = threading.Event()
 event_stop = threading.Event()
@@ -83,17 +90,27 @@ def upload():
         return redirect(request.url)
     if file:
         tracks.store(file, secure_filename(file.filename))
-    return render_template('index.html')
+    return render_template('index.html', **get_dynamic_fields())
 
 @app.route('/lighting', methods=['POST'])
 def set_lighting():
-    lighting = request.form['light_color']
-    logging.info('Request to set lighting: ' + lighting)
-    flash('Setting new lighting: ' + lighting)
+    sectionList = list()
+    for key in request.form:
+        m = re.match(r"led_color(\d)", key) 
+        if m:
+            nr = m.group(1)
+            color = request.form[key]
+            logging.info('Request to set lighting ' + str(nr) + ': ' + color)
+            section = Section.fromHex(nr, color)
+            sectionList.append(section)
+    
+    ledConfig.setSectionList(sectionList, True)
+    
     return render_template('index.html', **get_dynamic_fields())
 
 def get_dynamic_fields():
-    d = dict(tracks=tracks.list())
+    sections = ledConfig.getSectionList()
+    d = dict(tracks=tracks.list(), ledsections=sections)
     return d
 
 
@@ -106,6 +123,7 @@ if __name__ == '__main__':
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")
     else:
+        ledConfig.init()
         mainThread = threading.Thread(name='sandtrailsMain', target=hardware.run, args=(event_start, event_stop, event_shutdown))
         mainThread.start()
         logging.info("Started main sandtrails thread.")

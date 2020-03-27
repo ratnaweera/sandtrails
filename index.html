@@ -45,9 +45,24 @@
                 <p id="lighting_quote">Put your art into the right light</p>
                 <form method="POST" action="/lighting" novalidate="">
                     <div class="form-row">
-                        <div class="col align-self-center"><label class="col-form-label" id="colorpicker_label" for="colorpicker">LED color:&nbsp;</label></div>
-                        <div class="col-1 align-self-center"><input type="color" id="colorpicker" name="light_color"></div>
-                        <div class="col"><button class="btn btn-primary btn-lg btn-default" id="light_button" type="submit">Set</button></div>
+                        <div id="ledsection_container" class="col align-self-center">
+                            {% for ledsection in ledsections %}
+                            <div class="form-row">
+                                <div class="col">
+                                  <label class="col-form-label" id="colorpicker_label" for="colorpicker">LED Color {{ledsection.nr}}:</label>
+                                </div>
+                                <div class="col-1 align-self-center">
+                                  <input type="color" id="colorpicker" name="led_color{{ledsection.nr}}" value="{{ledsection.color}}">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col align-self-center"><button class="btn btn-primary btn-lg btn-default" id="light_button" type="submit">Set</button></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="col text-center" style="margin: 20px;">
+                          <button id="add_ledsection" class="btn btn-dark btn-sm" type="button">+ add color</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -67,13 +82,13 @@
                             </div>
                             <div class="row">
                                 <div class="col bloc">
-																	{% if tracks %}
-																	<div id="tracks_list" class="fancy_list">
-																		{% for track in tracks %}
-																		<a class="list-group-item list-group-item-action" href="#">{{ track }}</a>
-																		{% endfor %}
-																	</div>
-																	{% endif %}
+                                  {% if tracks %}
+                                  <div id="tracks_list" class="fancy_list">
+                                    {% for track in tracks %}
+                                    <a class="list-group-item list-group-item-action" href="#">{{ track }}</a>
+                                    {% endfor %}
+                                  </div>
+                                  {% endif %}
                                 </div>
                             </div>
                             <div class="row">
@@ -99,18 +114,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-2 align-self-center"><button class="btn btn-primary btn-block btn-default" id="startstop_button" type="button">Start</button></div>
+                        <div class="col-2 align-self-center"><button class="btn btn-primary btn-block btn-default" id="startstop_button" type="button">-</button></div>
                     </div>
                     {% with messages = get_flashed_messages() %}
                     {% if messages %}
                     <div class="row">
-                      <div class="col" id="messages">
-												<h3>Messages</h3>
-                          <ul class="fancy_list">
+                        <div class="col" id="messages">
+                            <h3>Messages</h3>
+                            <ul class="fancy_list">
                             {% for message in messages %}
                             <li>{{ message }}</li>
                             {% endfor %}
-                          </ul>
+                            </ul>
                         </div>
                     </div>
                     {% endif %}
