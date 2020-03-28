@@ -44,7 +44,7 @@ class Leds:
     
     @staticmethod
     def adjustBrightness(r, g, b, factor):
-        return Leds.clampRGB(r * factor, g * factor, b * factor)
+        return Leds.clampRGB(int(round(r * factor)), int(round(g * factor)), int(round(b * factor)))
         
     def update(self):
         self.pixels.show()
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     assert Leds.adjustBrightness(100, 200, 300, 0.5) == (50, 100, 150)
     assert Leds.adjustBrightness(100, 200, 300, 1.0) == (100, 200, 255)
 
-    led = Leds(10)
+    led = Leds(64)
     led.init()
     led.set(0, 50, 0, 0)
     led.set(1, 0, 50, 0)
