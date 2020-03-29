@@ -78,3 +78,15 @@ $(function(){
 				input.attr("name", "led_color" + newNr);
 		});
 });
+
+$("#light_button").on("click", function(){
+	var list = "";
+	$("#ledsection_container").find("input").each(function(){
+		list = list + $(this).val() + ";";
+	});
+	if (list != "")
+	{
+		$.post("/lighting", {newcolors: list}, function(data, result){
+		});
+	}
+});

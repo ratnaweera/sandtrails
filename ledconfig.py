@@ -14,21 +14,20 @@ DEFAULT_COLOR = Color(0, 0, 0)
     
 class Section:
     
-    def __init__(self, nr, color):
-        self.nr = nr
+    def __init__(self, color):
         self.color = color
     
     @classmethod
-    def fromRGB(cls, nr, r, g, b):
-        return Section(nr, Color(r, g, b))
+    def fromRGB(cls, r, g, b):
+        return Section(Color(r, g, b))
     
     @classmethod
-    def fromColor(cls, nr, color):
-        return Section(nr, color)
+    def fromColor(cls, color):
+        return Section(color)
     
     @classmethod
-    def fromHex(cls, nr, hexcode):
-        return Section(nr, Color.fromHex(hexcode))
+    def fromHex(cls, hexcode):
+        return Section(Color.fromHex(hexcode))
     
         
 class LedConfig:
@@ -36,7 +35,7 @@ class LedConfig:
     def __init__(self, hw):
         self.hw = hw
         self.nrOfPixels = hw.getNrOfPixels()
-        self.list = [Section.fromColor(1, DEFAULT_COLOR)]
+        self.list = [Section.fromColor(DEFAULT_COLOR)]
         self.blur = False
     
     def init(self):
@@ -82,7 +81,7 @@ if __name__ == "__main__":
     ledConfig = LedConfig(ledEmulator)
     ledConfig.init()
     
-    sectionList = (Section.fromRGB(1, 255, 0, 0), Section.fromRGB(2, 0, 255, 0), Section.fromRGB(3, 255, 0, 255))
+    sectionList = (Section.fromRGB(255, 0, 0), Section.fromRGB(0, 255, 0), Section.fromRGB(255, 0, 255))
     ledConfig.setSectionList(sectionList, True)
     ledConfig.update()
 
