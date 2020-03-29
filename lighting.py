@@ -5,8 +5,8 @@ The LEDs color is determined by the color of the section.
 Blurring between the section's color can be enabled.
 """
 
-from ledemulator import LedEmulator
 from color import Color
+from ledemul import Leds
 
 
 DEFAULT_COLOR = Color(0, 0, 0)
@@ -30,7 +30,7 @@ class Section:
         return Section(Color.fromHex(hexcode))
     
         
-class LedConfig:
+class Lighting:
     
     def __init__(self, hw):
         self.hw = hw
@@ -69,7 +69,6 @@ class LedConfig:
         if self.blur:
             nextSection = self.list[(sectionNr + 1) % len(self.list)]
             interpolatedColor = section.color.interpolate(nextSection.color, fraction)
-            #print(str(fraction) + " " + str(section.color) + " " + str(nextSection.color) + " -> " + str(interpolatedColor))
             return interpolatedColor
         else:
             return section.color
@@ -77,14 +76,14 @@ class LedConfig:
  
 if __name__ == "__main__":
 
-    ledEmulator = LedEmulator(25)
-    ledConfig = LedConfig(ledEmulator)
-    ledConfig.init()
+    leds = Leds(25)
+    lighting = Lighting(leds)
+    lighting.init()
     
     sectionList = (Section.fromRGB(255, 0, 0), Section.fromRGB(0, 255, 0), Section.fromRGB(255, 0, 255))
-    ledConfig.setSectionList(sectionList, True)
-    ledConfig.update()
+    lighting.setSectionList(sectionList, True)
+    lighting.update()
 
-    ledConfig.finalize()
+    lighting.finalize()
     
     

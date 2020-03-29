@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 from tracks import Tracks
 from playlist import Playlist
 from hardware import Hardware
-from ledconfig import LedConfig, Section
+from lighting import Lighting, Section
 try:  
     from led import Leds
 except:
@@ -22,7 +22,7 @@ tracks = Tracks("tracks")
 playlist = Playlist()
 hardware = Hardware(tracks, playlist)
 ledHw = Leds(64)
-ledConfig = LedConfig(ledHw)
+ledConfig = Lighting(ledHw)
 
 event_start = threading.Event()
 event_stop = threading.Event()
