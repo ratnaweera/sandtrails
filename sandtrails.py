@@ -12,7 +12,10 @@ from tracks import Tracks
 from playlist import Playlist
 from hardware import Hardware
 from ledconfig import LedConfig, Section
-from led import Leds
+try:  
+    from led import Leds
+except:
+    from ledemul import Leds
 
 # Initializations
 tracks = Tracks("tracks")
