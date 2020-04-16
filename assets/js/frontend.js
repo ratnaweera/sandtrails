@@ -64,3 +64,29 @@ $("#file_upload").change(function(){
 		var form = document.getElementById("file_uploader_form");
 		form.submit();
 });
+
+$(function(){
+	$("#add_ledsection").on("click", function(e){
+				var container = $("#ledsection_container");
+				var sections = container.children("div");
+				var newNr = sections.length + 1;
+				var newDiv = sections.last().clone();
+				newDiv.appendTo(container);
+				var label = newDiv.find("label").first();
+				label.text("LED Color " + newNr + ":");
+				var input = newDiv.find("input").first();
+				input.attr("name", "led_color" + newNr);
+		});
+});
+
+$("#light_button").on("click", function(){
+	var list = "";
+	$("#ledsection_container").find("input").each(function(){
+		list = list + $(this).val() + ";";
+	});
+	if (list != "")
+	{
+		$.post("/lighting", {newcolors: list}, function(data, result){
+		});
+	}
+});
