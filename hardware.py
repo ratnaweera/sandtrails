@@ -52,7 +52,7 @@ class Hardware:
                             if eStop.isSet():
                                 logging.info("Stop signal set, exiting playlist")
                                 break
-        
+                        axes.release_steppers()
                         logging.info("Playlist done!")
                     
                         if eStop.isSet():

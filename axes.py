@@ -2,26 +2,23 @@ import RPi.GPIO as GPIO
 import logging
 import math
 from time import sleep
-from numpy import sign
+from adafruit_motor import stepper
+from adafruit_motorkit import MotorKit
 
-CW = GPIO.LOW            # Clockwise rotation
-CCW = GPIO.HIGH          # Counterclockwise rotation
-SPR = 200*32             # Steps per revolution (NEMA = 200 steps/rev, microstepping 1/32)
+SPR = 200*16             # Steps per revolution (NEMA = 200 steps/rev, microstepping 1/16)
+stepstyle = stepper.MICROSTEP
+kit = MotorKit()
 
 # Axes Configuration: [Theta Axis, Rho Axis]
-DIR = [5, 21]            # GPIO pin: Stepper motor set direction
-STEP = [6, 20]           # GPIO pin: Stepper motor trigger step
-MODE = [(26, 19, 13), (22, 27, 17)]   # GPIO pin: Stepper motor microstep resolution
 GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 HOME = [18, 23, 0]       # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
 
 # Rho Axis
-RH_MAX = 150             # Maximum value for RHO axis in [mm]
+RH_MAX = 20             # Maximum value for RHO axis in [mm]
 RH_MIN = -2              # Minimum value for RHO axis in [mm]
 
 # Other constants
-STEP_DELAY = 0.0001      # [s] delay between stepper motor steps (~ 1/"speed")
 PRECISION = 5            # Number of decimal places
 ROTATION = 2*math.pi     # [rad] to improve readability
 
@@ -34,32 +31,20 @@ HOMED = 4
 
 sign = lambda x: (1, -1)[x < 0]
 
+def release_steppers():
+    kit.stepper1.release()
+    kit.stepper2.release()
+
 def setup_steppermotors():
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(DIR[0], GPIO.OUT)
-    GPIO.setup(DIR[1], GPIO.OUT)
-    GPIO.output(DIR[0], CW)
-    GPIO.output(DIR[1], CW)
-
-    GPIO.setup(STEP[0], GPIO.OUT)
-    GPIO.setup(STEP[1], GPIO.OUT)
     GPIO.setup(HOME[0], GPIO.IN)
     GPIO.setup(HOME[1], GPIO.IN)
-    #GPIO.setup(HOME[2], GPIO.IN) # not connected yet
-
-    GPIO.setup(MODE[0], GPIO.OUT)
-    GPIO.setup(MODE[1], GPIO.OUT)
-    RESOLUTION = {'Full': (0, 0, 0),
-                  'Half': (1, 0, 0),
-                  '1/4': (0, 1, 0),
-                  '1/8': (1, 1, 0),
-                  '1/16': (0, 0, 1),
-                  '1/32': (1, 0, 1)}
-    GPIO.output(MODE[0], RESOLUTION['1/32'])
-    GPIO.output(MODE[1], RESOLUTION['1/32'])
+    GPIO.setup(HOME[2], GPIO.IN) # not connected yet
+    release_steppers()
 
 def cleanup():
     GPIO.cleanup()
+    release_steppers()
     
 class thetarho:
     def __init__(self):
@@ -123,14 +108,13 @@ class thetarho:
             logging.debug("delta: " + str(deltaSteps) + " [steps steps] (loop 1)")
 
             if deltaSteps[0] > 0:   # Differentiate rotation direction based on deltaSteps
-                GPIO.output(DIR[0], CW)
+                dir1 = stepper.FORWARD
             else:
-                GPIO.output(DIR[0], CCW)
+                dir1 = stepper.BACKWARD
             if deltaSteps[1] > 0:   # Differentiate rotation direction based on deltaSteps
-                GPIO.output(DIR[1], CW)
+                dir2 = stepper.FORWARD
             else:
-                GPIO.output(DIR[1], CCW)
-            sleep(STEP_DELAY)         # Give output time to set. Unsure if necessary
+                dir2 = stepper.BACKWARD
             moveBothAxes = False      # Variable used later to prevent checking (x % factorial == 0) every time 
             
             if abs(deltaSteps[0]) >= abs(deltaSteps[1]):    # More steps in THETA than there are in RHO
@@ -145,20 +129,15 @@ class thetarho:
                 logging.debug(str(factorial) + " times more THETA steps than RHO steps.")
                 
                 for x in range(abs(deltaSteps[0])):
-                    GPIO.output(STEP[0], GPIO.HIGH)
+                    kit.stepper1.onestep(direction=dir1, style=stepstyle)
                     if ((x+1) % factorial == 0):
-                        GPIO.output(STEP[1], GPIO.HIGH)
+                        kit.stepper2.onestep(direction=dir2, style=stepstyle)
                         moveBothAxes = True
                     else:
                         moveBothAxes = False
-                    sleep(STEP_DELAY)
-                    GPIO.output(STEP[0], GPIO.LOW)
+                    self.curSteps[0] += int(sign(deltaSteps[0])) # increment or decrement based on direction
                     if moveBothAxes:
-                        GPIO.output(STEP[1], GPIO.LOW)
-                    sleep(STEP_DELAY)
-                    self.curSteps[0] += int(sign(deltaSteps[0])) # inrecement or decrement based on direction
-                    if moveBothAxes:
-                        self.curSteps[1] += int(sign(deltaSteps[1])) # inrecement or decrement based on direction
+                        self.curSteps[1] += int(sign(deltaSteps[1])) # increment or decrement based on direction
                     #If we are in run mode HOMING_A, check if homing sensors [0] and [1] are active
                     if self.runState == HOMING_A:
                         if (not GPIO.input(HOME[0]) and not GPIO.input(HOME[1])):
@@ -184,20 +163,15 @@ class thetarho:
                 logging.debug(str(factorial) + " times more RHO steps than THETA steps.")
                 
                 for x in range(abs(deltaSteps[1])):
-                    GPIO.output(STEP[1], GPIO.HIGH)
+                    kit.stepper2.onestep(direction=dir2, style=stepstyle)
                     if ((x+1) % factorial == 0):
-                        GPIO.output(STEP[0], GPIO.HIGH)
+                        kit.stepper1.onestep(direction=dir1, style=stepstyle)
                         moveBothAxes = True
                     else:
                         moveBothAxes = False
-                    sleep(STEP_DELAY)
-                    GPIO.output(STEP[1], GPIO.LOW)
+                    self.curSteps[1] += int(sign(deltaSteps[1])) # increment or decrement based on direction
                     if moveBothAxes:
-                        GPIO.output(STEP[0], GPIO.LOW)
-                    sleep(STEP_DELAY)
-                    self.curSteps[1] += int(sign(deltaSteps[1])) # inrecement or decrement based on direction
-                    if moveBothAxes:
-                        self.curSteps[0] += int(sign(deltaSteps[0])) # inrecement or decrement based on direction
+                        self.curSteps[0] += int(sign(deltaSteps[0])) # increment or decrement based on direction
                     
                     #If we are in run mode HOMING_A, check if homing sensors [0] and [1] are active
                     if self.runState == HOMING_A:
@@ -219,27 +193,19 @@ class thetarho:
             
             if deltaSteps[0] != 0:
                 if deltaSteps[0] > 0:   # Differentiate rotation direction based on deltaSteps
-                    GPIO.output(DIR[0], CW)
+                    dir1 = stepper.FORWARD
                 else:
-                    GPIO.output(DIR[0], CCW)
-                sleep(STEP_DELAY)         # Give output time to set. Unsure if necessary
+                    dir1 = stepper.BACKWARD
                 for x in range(abs(deltaSteps[0])):
-                    GPIO.output(STEP[0], GPIO.HIGH)
-                    sleep(STEP_DELAY)
-                    GPIO.output(STEP[0], GPIO.LOW)
-                    sleep(STEP_DELAY)
+                    kit.stepper1.onestep(direction=dir1, style=stepstyle)
                     self.curSteps[0] += int(sign(deltaSteps[0])) # inrecement or decrement based on direction
             if deltaSteps[1] != 0:
                 if deltaSteps[1] > 0:   # Differentiate rotation direction based on deltaSteps
-                    GPIO.output(DIR[1], CW)
+                    dir2 = stepper.FORWARD
                 else:
-                    GPIO.output(DIR[1], CCW)
-                sleep(STEP_DELAY)         # Give output time to set. Unsure if necessary
+                    dir2 = stepper.BACKWARD
                 for x in range(abs(deltaSteps[1])):
-                    GPIO.output(STEP[1], GPIO.HIGH)
-                    sleep(STEP_DELAY)
-                    GPIO.output(STEP[1], GPIO.LOW)
-                    sleep(STEP_DELAY)
+                    kit.stepper2.onestep(direction=dir2, style=stepstyle)
                     self.curSteps[1] += int(sign(deltaSteps[1])) # inrecement or decrement based on direction
             self.curPos = self.convertStepsToPos(self.curSteps)
             logging.debug("Position after single axis move: " + self.curState())
@@ -274,7 +240,7 @@ class thetarho:
         #   If no sensors were found after one full rotation, output error.
         if self.runState != INIT:
             logging.warn("Homing: Calling homing in the correct place? Entering homing run...")
-            
+        """    
         #If THETA axis is already at home location, move CCW until both sensors are inactive
         if (not GPIO.input(HOME[0]) and not GPIO.input(HOME[1])):
             logging.debug("Homing: Already in home position, retracing 1/16 rotation")
@@ -314,6 +280,7 @@ class thetarho:
         else:
             raise RuntimeError("Homing: Both homing switches for THETA are either active or inactive.")
         #TODO: Home RHO axis
+    """
         logging.info("TODO: Home RHO axis (not yet implemented)")
         self.runState = HOMED
         logging.info("Homing: Setting runState = HOMED")
