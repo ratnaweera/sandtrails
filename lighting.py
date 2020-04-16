@@ -6,7 +6,7 @@ Blurring between the section's color can be enabled.
 """
 
 from color import Color
-from ledemul import Leds
+from led_nohw import Leds
 
 
 DEFAULT_COLOR = Color(0, 0, 0)

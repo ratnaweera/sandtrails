@@ -15,7 +15,7 @@ from lighting import Lighting, Section
 try:  
     from led import Leds
 except:
-    from ledemul import Leds
+    from led_nohw import Leds
 
 # Initializations
 tracks = Tracks("tracks")
