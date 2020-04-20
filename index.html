@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cabin:700">
     <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
-<title>Ho</title>
 </head>
 
 <body id="page-top">
@@ -27,46 +26,7 @@
             </div>
         </div>
     </nav>
-    <header class="masthead" style="background-image:url('assets/img/spiral_and_marble.png');">
-        <div class="intro-body">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-8 mx-auto">
-                        <h1 class="brand-heading">SANDTRAILS</h1>
-                        <p class="intro-text">You can't leave footprints in the sands of time while sitting down.&nbsp;&nbsp;&nbsp;<br><span id="author">[Nelson Rockefeller]</span></p><a class="btn btn-link btn-circle" role="button" href="#lighting"><i class="fa fa-angle-double-down animated"></i></a></div>
-                </div>
-            </div>
-        </div>
-    </header>
-    <section id="lighting" class="content-section text-center">
-        <div class="container">
-            <div class="col-lg-8 mx-auto">
-                <h1>Lighting</h1>
-                <p id="lighting_quote">Put your art into the right light</p>
-								<div class="form-row">
-										<div id="ledsection_container" class="col align-self-center">
-												{% for ledsection in ledsections %}
-												<div class="form-row">
-														<div class="col">
-															<label class="col-form-label" id="colorpicker_label" for="colorpicker">LED Color {{ledsection.nr}}:</label>
-														</div>
-														<div class="col-1 align-self-center">
-															<input type="color" id="colorpicker" name="led_color{{ledsection.nr}}" value="{{ledsection.color}}">
-														</div>
-												</div>
-												{% endfor %}
-										</div>
-										<div class="col align-self-center"><button class="btn btn-primary btn-lg btn-default" id="light_button" type="submit">Set</button></div>
-								</div>
-								<div class="form-row">
-										<div class="col text-center" style="margin: 20px;">
-											<button id="add_ledsection" class="btn btn-dark btn-sm" type="button">+ add color</button>
-										</div>
-								</div>
-            </div>
-        </div>
-    </section>
-    <section id="tracks" class="download-section content-section text-center" style="background-image:url('assets/img/spiral.jpg');">
+     <section id="tracks" class="download-section content-section text-center" style="background-image:url('assets/img/spiral.jpg');">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 mx-auto">
@@ -129,6 +89,34 @@
                     {% endif %}
                     {% endwith %}
                 </div>
+            </div>
+        </div>
+    </section>
+    <section id="lighting" class="content-section text-center">
+        <div class="container">
+            <div class="col-lg-8 mx-auto">
+                <h1>Lighting</h1>
+                <p id="lighting_quote">Put your art into the right light</p>
+								<div class="form-row">
+										<div id="ledsection_container" class="col align-self-center">
+												{% for ledsection in ledsections %}
+												<div class="form-row">
+														<div class="col">
+															<label class="col-form-label" id="colorpicker_label" for="colorpicker">LED Color {{ledsection.nr}}:</label>
+														</div>
+														<div class="col-1 align-self-center">
+															<input type="color" id="colorpicker" name="led_color{{ledsection.nr}}" value="{{ledsection.color}}">
+														</div>
+												</div>
+												{% endfor %}
+										</div>
+										<div class="col align-self-center"><button class="btn btn-primary btn-lg btn-default" id="light_button" type="submit">Set</button></div>
+								</div>
+								<div class="form-row">
+										<div class="col text-center" style="margin: 20px;">
+											<button id="add_ledsection" class="btn btn-dark btn-sm" type="button">+ add color</button>
+										</div>
+								</div>
             </div>
         </div>
     </section>
