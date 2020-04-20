@@ -18,8 +18,12 @@ HOME = [25, 24, 23]       # GPIO pin number for homing switches [THETA 1, THETA 
 ENABLE = [16, 12]         # GPIO pin number for enabling stepper motors [THETA, RHO]
 
 # Rho Axis
-RH_MAX = 150             # Maximum value for RHO axis in [mm]
+RH_MAX = 170             # Maximum value for RHO axis in [mm]
 RH_MIN = -2              # Minimum value for RHO axis in [mm]
+RH_HOME_SENSOR_POS = 170 # RHO axis position when home switch of RHO is activated [mm]
+                         # This is a parameter that has to be tuned depending on physical mounting and sensor sensitivity.
+                         # To tune: Mark desired axis 0 position on rho axis and linear guide.
+                         # Extend RHO until the sensor triggers. Measure distance from 0 to this mark im mm. Adjust here.
 
 # Other constants
 STEP_DELAY = 0.0001      # [s] delay between stepper motor steps (~ 1/"speed")
@@ -27,11 +31,16 @@ PRECISION = 5            # Number of decimal places
 ROTATION = 2*math.pi     # [rad] to improve readability
 
 # Run states "dictionary"
-INIT = 0
-HOMING_A = 1
-HOMING_B = 2
-HOMING_C = 3
-HOMED = 4
+runState = {
+    'INIT': 0,
+    'HOMING_A' : 1,
+    'HOMING_B' : 2,
+    'HOMING_C' : 3,
+    'HOMING_D' : 4,
+    'HOMING_E' : 5,
+    'HOMED'    : 6,
+    }
+
 
 sign = lambda x: (1, -1)[x < 0]
 
@@ -86,7 +95,7 @@ class thetarho:
         self.tarPos = [0.0, 0.0]       # [rad mm]      target position
         self.tarSteps = [0, 0]         # [steps steps] target position
         self.homingSteps = [0, 0]      # [steps steps] homing switch position (temporary reference value)
-        self.runState = INIT           # Set to "HOMED" once homing is completed
+        self.runState = runState['INIT'] # Set to "HOMED" once homing is completed
         
     # Return current state (= position and steps)
     def curState(self):
@@ -185,16 +194,16 @@ class thetarho:
                     if moveBothAxes:
                         self.curSteps[1] += int(sign(deltaSteps[1])) # inrecement or decrement based on direction
                     #If we are in run mode HOMING_A, check if homing sensors [0] and [1] are active
-                    if self.runState == HOMING_A:
+                    if self.runState == runState['HOMING_A']:
                         if (not GPIO.input(HOME[0]) and not GPIO.input(HOME[1])):
-                            logging.debug("Homing: Found both homing switches at " + self.curState())
+                            logging.debug("HOMING_A: Found both homing switches at " + self.curState())
                             return 0
                     #If we are in run mode HOMING_B, check if homing sensor [0] or [1] is inactive
-                    if self.runState == HOMING_B:
+                    if self.runState == runState['HOMING_B']:
                         if GPIO.input(HOME[0]) or GPIO.input(HOME[1]):
-                            logging.debug("Homing: One home switch dropped off at " + self.curState())
+                            logging.debug("HOMING_B: One home switch dropped off at " + self.curState())
                             return 0
-            
+                    
                 self.curPos = self.convertStepsToPos(self.curSteps)
                     
             else:  # More steps in RHO than there are in THETA
@@ -223,16 +232,17 @@ class thetarho:
                     self.curSteps[1] += int(sign(deltaSteps[1])) # inrecement or decrement based on direction
                     if moveBothAxes:
                         self.curSteps[0] += int(sign(deltaSteps[0])) # inrecement or decrement based on direction
-                    
-                    #If we are in run mode HOMING_A, check if homing sensors [0] and [1] are active
-                    if self.runState == HOMING_A:
-                        if (not GPIO.input(HOME[0]) and not GPIO.input(HOME[1])):
-                            logging.debug("Homing: Found both homing switches at " + self.curState())
+                        
+                    #If we are in run mode HOMING_D, check if homing sensor [2] is inactive
+                    if self.runState == runState['HOMING_D']:
+                        if GPIO.input(HOME[2]):
+                            logging.debug("HOMING_D: Home switch RHO dropped off at " + self.curState())
                             return 0
-                    #If we are in run mode HOMING_B, check if homing sensor [0] or [1] is inactive
-                    if self.runState == HOMING_B:
-                        if GPIO.input(HOME[0]) or GPIO.input(HOME[1]):
-                            logging.debug("Homing: One home switch dropped off at " + self.curState())
+                        
+                    #If we are in run mode HOMING_E, check if homing sensor [2] is active
+                    if self.runState == runState['HOMING_E']:
+                        if not GPIO.input(HOME[2]):
+                            logging.debug("HOMING_E: Home switch RHO triggered at " + self.curState())
                             return 0
                 self.curPos = self.convertStepsToPos(self.curSteps)
             
@@ -296,10 +306,20 @@ class thetarho:
         #   HOMING_B: Continue motion until one sensor drops signal.
         #   Set curSteps[0] = (delta steps above) / 2
         #    -> Zero position is in the middle of the zone where both home sensors are active.
+        #   HOMING_C: Move to (0,0) position (rotates THETA axis to zero, RHO stays)
         #   If no sensors were found after one full rotation, output error.
-        if self.runState != INIT:
+        #
+        #Homing of RHO axis:
+        #   HOMING_D: If homing sensor is active, retract RHO axis until it isn't
+        #   HOMING_E: Homing sensor is not active, extend RHO axis until it is
+        #             Set RHO axis distance to RH_HOME_SENSOR_POS.
+        #   Set HOMED
+
+        
+        
+        if self.runState != runState['INIT']:
             logging.warn("Homing: Calling homing in the correct place? Entering homing run...")
-        '''
+        
         #If THETA axis is already at home location, move CCW until both sensors are inactive
         if (not GPIO.input(HOME[0]) and not GPIO.input(HOME[1])):
             logging.debug("Homing: Already in home position, retracing 1/16 rotation")
@@ -308,7 +328,7 @@ class thetarho:
         if (not GPIO.input(HOME[0]) and not GPIO.input(HOME[1])):
             raise RuntimeError("Homing: Homing switches for THETA are still active after 1/16 rotation... something is wrong. Exiting.")
         
-        self.runState = HOMING_A
+        self.runState = runState['HOMING_A']
         logging.info("Homing: Setting runState = HOMING_A")
         
         self.goTo([1*ROTATION, 0])   # perform max of 1 rotation, exit when both sensors active
@@ -316,11 +336,11 @@ class thetarho:
         if self.withinTolerance([1*ROTATION, 0]):
             raise RuntimeError("Homing: Went through full rotation without finding THETA homing switches.")
         elif GPIO.input(HOME[0]) or GPIO.input(HOME[1]):
-            raise RuntimeError("Homing: At least one homing switch for THETA is inactive")
+            raise RuntimeError("HOMING_A: At least one homing switch for THETA is inactive")
         else:
             self.homingSteps[0] = self.curSteps[0] # save for reference
             self.homingSteps[1] = self.curSteps[1] # save for reference                    
-            self.runState = HOMING_B
+            self.runState = runState['HOMING_B']
             logging.info("Homing: Setting runState = HOMING_B")
             
         self.goTo([(1+1/8)*ROTATION, 0])   # perform max of additional 1/8 rotation
@@ -331,15 +351,36 @@ class thetarho:
             self.homingSteps[1] = 0
             self.curPos = self.convertStepsToPos(self.curSteps)
             logging.debug("Homing: Current position after THETA homing: " + self.curState())
-            self.runState = HOMING_C
+            self.runState = runState['HOMING_C']
             logging.info("Homing: Setting runState = HOMING_C")
             self.goTo([0, 0])
             logging.debug("Homing: At THETA home position " + self.curState())
             sleep(5)
         else:
-            raise RuntimeError("Homing: Both homing switches for THETA are either active or inactive.")
-        #TODO: Home RHO axis
-        '''
-        logging.info("TODO: Home RHO axis (not yet implemented)")
-        self.runState = HOMED
+            raise RuntimeError("HOMING_B: Both homing switches for THETA are either active or inactive.")
+        
+        # Home RHO axis
+        if not GPIO.input(HOME[2]):
+            self.runState = runState['HOMING_D']
+            logging.info("Homing: Setting runState = HOMING_D")
+            self.goTo([0, -10]) #retract axis by 10mm, the home sensor should not be triggered then
+            if not GPIO.input(HOME[2]):
+                raise RuntimeError("HOMING_D: RHO homing sensor is active even after retracing by 10mm.")
+            else:
+                logging.info("Homing: Retracted RHO axis by " + str(self.curPos[1]) + "mm")
+        
+        self.runState = runState['HOMING_E']
+        logging.info("Homing: Setting runState = HOMING_E")
+        self.goTo([0, RH_MAX]) #Move RHO axis outwards to look for homing switch (max to RHO_MAX mm)
+        if GPIO.input(HOME[2]):
+            raise RuntimeError("HOMING_E: RHO homing sensor is inactive even after full extension by " + str(RHO_MAX) + "mm")
+        
+        self.curPos = [0, RH_HOME_SENSOR_POS]
+        self.curSteps = self.convertPosToSteps(self.curPos)
+        logging.info("Homing: Set current position to " + self.curState())
+        
+        self.runState = runState['HOMED']
         logging.info("Homing: Setting runState = HOMED")
+
+        self.goTo([0,0])
+        steppers_disable()
