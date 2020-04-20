@@ -14,7 +14,8 @@ STEP = [6, 20]           # GPIO pin: Stepper motor trigger step
 MODE = [(26, 19, 13), (22, 27, 17)]   # GPIO pin: Stepper motor microstep resolution
 GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
-HOME = [18, 23, 0]       # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
+HOME = [25, 24, 23]       # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
+ENABLE = [16, 12]         # GPIO pin number for enabling stepper motors [THETA, RHO]
 
 # Rho Axis
 RH_MAX = 150             # Maximum value for RHO axis in [mm]
@@ -45,7 +46,7 @@ def setup_steppermotors():
     GPIO.setup(STEP[1], GPIO.OUT)
     GPIO.setup(HOME[0], GPIO.IN)
     GPIO.setup(HOME[1], GPIO.IN)
-    #GPIO.setup(HOME[2], GPIO.IN) # not connected yet
+    GPIO.setup(HOME[2], GPIO.IN)
 
     GPIO.setup(MODE[0], GPIO.OUT)
     GPIO.setup(MODE[1], GPIO.OUT)
@@ -57,6 +58,23 @@ def setup_steppermotors():
                   '1/32': (1, 0, 1)}
     GPIO.output(MODE[0], RESOLUTION['1/32'])
     GPIO.output(MODE[1], RESOLUTION['1/32'])
+    
+    #Enable / disable pins
+    GPIO.setup(ENABLE[0], GPIO.OUT)
+    GPIO.setup(ENABLE[1], GPIO.OUT)
+    steppers_disable()
+    
+def steppers_enable():
+    GPIO.output(ENABLE[0], True)
+    GPIO.output(ENABLE[1], True)
+    sleep(0.003) #DRV8825 takes 1.7ms to wake up
+    logging.debug("Enabled stepper motors (output enable = True)")
+    
+def steppers_disable():
+    GPIO.output(ENABLE[0], False)
+    GPIO.output(ENABLE[1], False)
+    sleep(0.003) #DRV8825 takes 1.7ms to wake up. Assuming similar to go to sleep.
+    logging.debug("Disabled stepper motors (output enable = False)")
 
 def cleanup():
     GPIO.cleanup()
@@ -88,6 +106,7 @@ class thetarho:
     def convertStepsToPos(self, argSteps): # argSteps in [steps, steps]
         res0 = round(argSteps[0] / SPR * (2*math.pi) * GEAR[0], PRECISION)
         res1 = round(GEAR[1] * ( argSteps[1] * math.pi / SPR + res0 / 2), PRECISION)
+        #TODO: Fix this alternate calculation... something is off (don't match up).
         #res11 = round(math.pi * GEAR[1] / SPR * (argSteps[1] - argSteps[0] * GEAR[0]), PRECISION)
         #logging.debug("Comparing calculations: Using steps: " + str(res11) + " using rad: " + str(res1))
         return [res0, res1]    
@@ -113,6 +132,12 @@ class thetarho:
                 logging.info("Already at target position " + str(self.tarPos))
                 return 0
         else:
+            #Enable stepper motors if they are not already
+            if (not GPIO.input(ENABLE[0])) or (not GPIO.input(ENABLE[1])):
+                logging.warn("Steppers not yet enabled, enabling...")
+                steppers_enable()
+            
+            # Set target position and convert to steps
             self.tarPos[0] = round(dest[0], PRECISION)
             self.tarPos[1] = round(dest[1], PRECISION)
             self.tarSteps = self.convertPosToSteps(self.tarPos)
@@ -274,7 +299,7 @@ class thetarho:
         #   If no sensors were found after one full rotation, output error.
         if self.runState != INIT:
             logging.warn("Homing: Calling homing in the correct place? Entering homing run...")
-            
+        '''
         #If THETA axis is already at home location, move CCW until both sensors are inactive
         if (not GPIO.input(HOME[0]) and not GPIO.input(HOME[1])):
             logging.debug("Homing: Already in home position, retracing 1/16 rotation")
@@ -314,6 +339,7 @@ class thetarho:
         else:
             raise RuntimeError("Homing: Both homing switches for THETA are either active or inactive.")
         #TODO: Home RHO axis
+        '''
         logging.info("TODO: Home RHO axis (not yet implemented)")
         self.runState = HOMED
         logging.info("Homing: Setting runState = HOMED")

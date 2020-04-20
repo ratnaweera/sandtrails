@@ -20,10 +20,10 @@ class Hardware:
             thetarho = axes.thetarho()
             thetarho.homing()
             
-            logging.info("Waiting for start")
+            logging.info("Waiting for START")
             
             while not eShutdown.isSet():
-                logging.debug("Still waiting for start")
+                #logging.debug("Still waiting for START")
                 sleep(1)
                 if eStart.isSet():
                     eStart.clear() #clear the event, not sure if this works as intended
@@ -36,7 +36,7 @@ class Hardware:
                             
                             thr_coord = self.tracks.parse_thr(thr_file)
                             logging.info("Starting pattern: " + thr_file)
-        
+                            axes.steppers_enable()
                             index = 1
                             
                             for coord in thr_coord:
@@ -46,7 +46,8 @@ class Hardware:
                                 if eStop.isSet():
                                     logging.info("Stop signal set, exiting pattern")
                                     break
-                        
+                            
+                            thetarho.stripTheta()
                             logging.info("Pattern done!")
             
                             if eStop.isSet():
@@ -54,7 +55,8 @@ class Hardware:
                                 break
         
                         logging.info("Playlist done!")
-                    
+                        axes.steppers_disable()
+                        
                         if eStop.isSet():
                             eStop.clear()
                             break
@@ -77,7 +79,9 @@ class Hardware:
             try: # drive axes to zero
                 logging.info("Going back home")
                 thetarho.stripTheta()
+                axes.steppers_enable()
                 thetarho.goTo([0, 0])
+                axes.steppers_disable()
             except Exception as error2:
                 logging.error("Exception occured: " + str(error2))
                 logging.error("Could not drive axes back to zero. Careful on next run, might hit physical limits")
