@@ -20,10 +20,10 @@ class Hardware:
             thetarho = axes.thetarho()
             thetarho.homing()
             
-            logging.info("Waiting for start")
+            logging.info("Waiting for START")
             
             while not eShutdown.isSet():
-                logging.debug("Still waiting for start")
+                #logging.debug("Still waiting for START")
                 sleep(1)
                 if eStart.isSet():
                     eStart.clear() #clear the event, not sure if this works as intended
@@ -46,7 +46,7 @@ class Hardware:
                                 if eStop.isSet():
                                     logging.info("Stop signal set, exiting pattern")
                                     break
-                        
+                            thetarho.stripTheta()
                             logging.info("Pattern done!")
             
                             if eStop.isSet():
@@ -66,7 +66,6 @@ class Hardware:
                     
                     
                     self.playlist.set_status(Status.stopped)
-    
                     
             logging.info("Main loop shutting down")
         

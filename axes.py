@@ -5,9 +5,10 @@ from time import sleep
 from adafruit_motor import stepper
 from adafruit_motorkit import MotorKit
 
-SPR = 200*16             # Steps per revolution (NEMA = 200 steps/rev, microstepping 1/16)
+MICRO = 16               # microstepping 1/16
+SPR = 200*MICRO          # Steps per revolution (NEMA = 200 steps/rev)
 stepstyle = stepper.MICROSTEP
-kit = MotorKit()
+kit = MotorKit(steppers_microsteps=MICRO)
 
 # Axes Configuration: [Theta Axis, Rho Axis]
 GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
@@ -15,7 +16,7 @@ TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when c
 HOME = [18, 23, 0]       # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
 
 # Rho Axis
-RH_MAX = 20             # Maximum value for RHO axis in [mm]
+RH_MAX = 170             # Maximum value for RHO axis in [mm]
 RH_MIN = -2              # Minimum value for RHO axis in [mm]
 
 # Other constants
@@ -66,15 +67,16 @@ class thetarho:
         res0 = round(argPos[0] * SPR / (2*math.pi) / GEAR[0])
         res1 = round((argPos[1] / GEAR[1] - argPos[0] / 2 ) * SPR / math.pi)
         #res11 = round(argPos[1] * SPR / math.pi / GEAR[1] - res0 * GEAR[0])
-        #logging.debug("Comparing calculations: Using steps: " + str(res11) + " using rad: " + str(res1))
+        #logging.debug("convertPosToSteps comparing calculations: Using steps: " + str(res11) + " using rad: " + str(res1))
         return [res0, res1]
     
     # For a given motor position in [steps, steps], calculate the corresponding magnet position in [rad, mm]
     def convertStepsToPos(self, argSteps): # argSteps in [steps, steps]
         res0 = round(argSteps[0] / SPR * (2*math.pi) * GEAR[0], PRECISION)
         res1 = round(GEAR[1] * ( argSteps[1] * math.pi / SPR + res0 / 2), PRECISION)
+        #TODO: Fix this alternate calculation... something is off.
         #res11 = round(math.pi * GEAR[1] / SPR * (argSteps[1] - argSteps[0] * GEAR[0]), PRECISION)
-        #logging.debug("Comparing calculations: Using steps: " + str(res11) + " using rad: " + str(res1))
+        #logging.debug("convertStepsToPos comparing calculations: Using steps: " + str(res11) + " using rad: " + str(res1))
         return [res0, res1]    
         
     # Check if current position is within a tolerance window of the position passsed as an argument
@@ -108,13 +110,13 @@ class thetarho:
             logging.debug("delta: " + str(deltaSteps) + " [steps steps] (loop 1)")
 
             if deltaSteps[0] > 0:   # Differentiate rotation direction based on deltaSteps
-                dir1 = stepper.FORWARD
-            else:
                 dir1 = stepper.BACKWARD
-            if deltaSteps[1] > 0:   # Differentiate rotation direction based on deltaSteps
-                dir2 = stepper.FORWARD
             else:
+                dir1 = stepper.FORWARD
+            if deltaSteps[1] > 0:   # Differentiate rotation direction based on deltaSteps
                 dir2 = stepper.BACKWARD
+            else:
+                dir2 = stepper.FORWARD
             moveBothAxes = False      # Variable used later to prevent checking (x % factorial == 0) every time 
             
             if abs(deltaSteps[0]) >= abs(deltaSteps[1]):    # More steps in THETA than there are in RHO
@@ -193,17 +195,17 @@ class thetarho:
             
             if deltaSteps[0] != 0:
                 if deltaSteps[0] > 0:   # Differentiate rotation direction based on deltaSteps
-                    dir1 = stepper.FORWARD
-                else:
                     dir1 = stepper.BACKWARD
+                else:
+                    dir1 = stepper.FORWARD
                 for x in range(abs(deltaSteps[0])):
                     kit.stepper1.onestep(direction=dir1, style=stepstyle)
-                    self.curSteps[0] += int(sign(deltaSteps[0])) # inrecement or decrement based on direction
+                    self.curSteps[0] += int(sign(deltaSteps[0])) # increment or decrement based on direction
             if deltaSteps[1] != 0:
                 if deltaSteps[1] > 0:   # Differentiate rotation direction based on deltaSteps
-                    dir2 = stepper.FORWARD
-                else:
                     dir2 = stepper.BACKWARD
+                else:
+                    dir2 = stepper.FORWARD
                 for x in range(abs(deltaSteps[1])):
                     kit.stepper2.onestep(direction=dir2, style=stepstyle)
                     self.curSteps[1] += int(sign(deltaSteps[1])) # inrecement or decrement based on direction

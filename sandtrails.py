@@ -31,6 +31,8 @@ event_shutdown = threading.Event()
 # Creating the web server
 app = Flask(__name__, template_folder=".", static_folder="assets")
 app.config.from_object('config.Config')
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 # Definition of all the server routings
 
@@ -40,9 +42,8 @@ def index():
 
 @app.route('/status', methods=['GET'])
 def status():
-    logging.debug('Request for status')
     d = dict(status=playlist.get_status_string())
-    logging.debug('Status is: ' + str(d))
+    #logging.debug('Status is: ' + str(d))
     return jsonify(d)
 
 @app.route('/shutdown', methods=['GET'])
