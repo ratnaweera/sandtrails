@@ -31,6 +31,8 @@ event_shutdown = threading.Event()
 # Creating the web server
 app = Flask(__name__, template_folder=".", static_folder="assets")
 app.config.from_object('config.Config')
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 # Definition of all the server routings
 
@@ -40,9 +42,9 @@ def index():
 
 @app.route('/status', methods=['GET'])
 def status():
-    logging.debug('Request for status')
+    #logging.debug('Request for status')
     d = dict(status=playlist.get_status_string())
-    logging.debug('Status is: ' + str(d))
+    #logging.debug('Status is: ' + str(d))
     return jsonify(d)
 
 @app.route('/shutdown', methods=['GET'])
@@ -114,7 +116,7 @@ if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
     dateFormat = "%H:%H:%S"
     #logging.basicConfig(filename='sandtrails.log', level=logging.INFO, format=msgFormat, datefmt=dateFormat)
-    logging.basicConfig(level=logging.INFO, format=msgFormat, datefmt=dateFormat)
+    logging.basicConfig(level=logging.DEBUG, format=msgFormat, datefmt=dateFormat)
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")
     else:
