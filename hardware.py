@@ -40,7 +40,8 @@ class Hardware:
                             index = 1
                             
                             for coord in thr_coord:
-                                logging.info("Go to " + str(round(float(coord[0]), 5)) + " " + str(round(float(coord[1])*axes.RH_MAX, 5)) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
+                                #logging.info("Go to " + str(round(float(coord[0]), 5)) + " " + str(round(float(coord[1])*axes.RH_MAX, 5)) + " (" + str(index) + "/" + str(len(thr_coord)) + ")")
+                                logging.info("Step " + str(index) + "/" + str(len(thr_coord)) + " (" + str(round(float(coord[0]), 5)) + " " + str(round(float(coord[1])*axes.RH_MAX, 5))  + ")")
                                 thetarho.goTo([float(coord[0]), float(coord[1])*axes.RH_MAX])
                                 index += 1
                                 if eStop.isSet():
@@ -89,3 +90,4 @@ class Hardware:
                 axes.cleanup()
                 logging.debug("GPIO cleanup performed")
                 logging.info("Sandtrails ended. Press Ctrl+C to quit app.")
+
