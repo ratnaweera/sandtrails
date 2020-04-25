@@ -1,3 +1,5 @@
+# Sandtrails Polar Sand table
+
 This is to get you started on building your own sand plotter.
 ![Sandtable](assets/table.jpg)
 
@@ -5,12 +7,32 @@ This is to get you started on building your own sand plotter.
 
 The following are the parts we used. Feel free to adapt as you see fit.
 
-| Part name     |  Product |  Supplier   | Cost  |
+| Part description     |  Part name |  Supplier   | Approx. cost  |
 | ------------- |-------------| -------------|-----:|
-| Raspberry pi  | Rasbperry Pi 2    | [Pi-Shop.ch](https://www.pi-shop.ch/raspberry-pi-2-model-b-v1-2-1-gb-ram) | 40 USD |
-| Stepper motor | 11HS20-0674S     | [Stepper Online](https://www.omc-stepperonline.com/nema-11-stepper-motor/nema-11-bipolar-1-8deg-12ncm-17oz-in-0-67a-6-2v-28x28x51mm-4-wires.html)      |   15.30 USD |
-| Proto-board | Perma-proto hat |  [Adafruit](https://www.adafruit.com/product/2314)  |    7.50 USD |
-| Todo | | | |
+| Raspberry pi  | Rasbperry Pi 2 B   | [Pi-Shop.ch](https://www.pi-shop.ch/raspberry-pi-2-model-b-v1-2-1-gb-ram) | 40 USD |
+| Stepper motor | 11HS20-0674S     | [Stepper Online](https://www.omc-stepperonline.com/nema-11-stepper-motor/nema-11-bipolar-1-8deg-12ncm-17oz-in-0-67a-6-2v-28x28x51mm-4-wires.html)      |   2x 15 USD |
+| Proto-board | Perma-proto hat |  [Adafruit](https://www.adafruit.com/product/2314)  |    8 USD |
+| Stepper motor driver     |  DRV8825 |  [Pololu](https://www.pololu.com/product/2133)   | 2 x 8 USD  |
+| Homing sensor     | Hall sensor |  [RobotDyn](https://robotdyn.com/hall-magnetic-sensor-with-analog-digital-outs.html)   | 3x 1 USD  |
+| Service tray     |  service tray |  Aliexpress   | 18 USD  |
+| Coffee table     |  Malmsta |  [Ikea](https://www.ikea.com/us/en/p/malmsta-side-table-black-brown-80261183/)   | 150 USD  |
+| L bracket     |  80x80x18 mm |  DIY store   | 4x 3 USD  |
+| L bracket     |  30x30x15 mm |  DIY store   | 4x 3 USD  |
+| Spur gear     |  28 tooth POM |  [Maedler.ch](https://www.maedler.de/Article/28102800)   | 2x 2 USD  |
+| Disc magnet Ø5 mm    |  S-05-05-N |  [Supermagnete.ch](https://www.supermagnete.ch/eng/disc-magnets-neodymium/disc-magnet-5mm-5mm_S-05-05-N)   | 1 USD  |
+| Pot magnet Ø16 mm    | CSN-16  |  [Supermagnete.ch](https://www.supermagnete.ch/eng/pot-magnets-with-countersunk-borehole/countersunk-pot-magnet-16mm_CSN-16)   | 2 USD  |
+| Steel ball Ø13 mm     | ST-K-13-N |  [Supermagnete.ch](https://www.supermagnete.ch/eng/school-magnets/steel-balls-13mm_ST-K-13-N)   | 1 USD  |
+| Steel ball Ø20 mm    |  ST-K-20-N |  [Supermagnete.ch](https://www.supermagnete.ch/eng/school-magnets/steel-balls-20mm_ST-K-20-N)   | 1 USD  |
+| Capacitors     |  10 uF |  Electronics store   | 2x 0 USD  |
+| Screws Raspberry Pi  fixation   |  M2.5 |  Various   | 4x 0USD  |
+| Standoffs     |  M3, 10mm |  Various   | 4x 0USD  |
+| Screws motor fixation     |  M2.5 x 16mm |  Various   | 4x 0 USD  |
+| Screws motor fixation     |  M2.5 x 10mm |  Various   | 4x 0 USD  |
+| Power supply Raspberry Pi     |  5 VDC, 2.5 A |  Various   | 20 USD  |
+| Power supply stepper motors     |  12 VDC, 1.5 A |  Various   | 20 USD  |
+
+
+Note that several of the very cheap components have minimum orders. So your "shopping list" will be considerably more expensive than the sum of the above. Shipping also adds up.
 
 
 
