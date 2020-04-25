@@ -1,7 +1,7 @@
 # Sandtrails Polar Sand table
 
-This is to get you started on building your own sand plotter.
-![Sandtable](assets/table.jpg)
+This is to get you started on building your own sand plotter. Some pictures of what this could look like in [gallery](gallery)
+[![Sandtable](assets/table.jpg)](gallery)
 
 ## Off-the-shelf parts
 
@@ -77,7 +77,8 @@ Taken from [https://www.rototron.info/](https://www.rototron.info/raspberry-pi-s
 
 ### Stepper motor leads
 
-Lead colors of stepperonline steppper motor:
+Lead colours of the stepper motors:
+
 ![Stepper motor leads](assets/datasheets/Stepper-11HS20-0674S.png)
 Taken from [https://www.omc-stepperonline.com](https://www.omc-stepperonline.com/nema-11-stepper-motor/nema-11-bipolar-1-8deg-12ncm-17oz-in-0-67a-6-2v-28x28x51mm-4-wires.html)
 
@@ -86,6 +87,7 @@ PDF including specs under [assets/datasheets/Stepper-11HS20-0674S.pdf](assets/da
 ### Homing sensors (Hall sensors)
 
 The hall sensor pinout is:
+
 ![RobotDyn Hall sensor pinout](assets/datasheets/RobotDyn-HallSensor-Pinout.png)
 Taken from [https://robotdyn.com/](https://robotdyn.com/hall-magnetic-sensor-with-analog-digital-outs.html).
 
@@ -149,6 +151,11 @@ The "Rho" stage uses a single hall sensor for homing. Countersink the hole and a
 ![Mounting Rho homing sensor](assets/assembly/4003_Homing_Rho.jpg)
 
 
-
-
 ## Software installation
+
+This section is still in its infancy. Basic steps are:
+- Set up a Raspberry Pi with the latest raspian
+- Install the packages from [requirements.txt](../requirements.txt)
+- Enable SPI
+- Clone the [sandtrails repository](https://github.com/ratnaweera/sandtrails.git)
+- Enable SSH  
