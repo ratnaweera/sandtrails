@@ -28,7 +28,7 @@ For now, wiring is done via a [GPIO T-cobbler](https://www.adafruit.com/product/
 
 ![Wiring overview](assets/wiring-1.jpg)
 
-This can and will be improved in the future.
+This can and will be improved in the future. So the following instructions do not go into detail since this will be changing soon anyway.
 
 ### Raspberry GPIO pinout
 
@@ -82,8 +82,21 @@ This is what we shall call things for the purpose of these instructions:
 Align the linear guides around the rho stage. Use 4 to 6 2mm dowel pins to help with alignment. Glue guides in place with enough play to prevent overdue resistance but tight enough so the axis does not "wiggle".
 ![Fixing Rho axis](assets/assembly/2001_Rho-guides.jpg)
 
-With a similar technique, fix the "lids" on the linera guides.
+With a similar technique, fix the "lids" on the liner guides.
 ![Lids on linear guides](assets/assembly/2002_Rho-guide-lids.jpg)
+
+Glue two spacers on each side of the rho stage to lift the magnet holder above the pinion of the Rho motor. Again, I used dowel pins (2mm) to align the parts for gluing.
+![Spacers for magnet holder](assets/assembly/2003_Pinion-spacers.jpg)
+
+Before gluing the magnet holder on top of this, measure how much distance is between the stack above and the bottom of your sand tray. This will depend on how you fix the sand tray relative to the motor mount plate. You might want to do this at the very end, when everything else is ready.
+![Distance of motor mount plate to sand tray](assets/assembly/2004_MagnetHolder-1.png)
+
+Bend the magnet holder by heating it (eg. over a candle) to create a "spring" to press the magnet to the sand tray.
+![Magnet holder "spring" pressing magnet upward](assets/assembly/2005_MagnetHolder-2.jpg)
+
+Push the homing magnets into the corresponding 5mm holes. 2x on the Theta stage and 1x on the Rho stage. Don't glue them yet, you'll need to check the polarity first before you do so.
+![5mm diameter, 5mm length homing magnets](assets/assembly/2006_HomingMagnets.jpg)
+
 
 ### Mounting the motors
 
