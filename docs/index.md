@@ -38,10 +38,10 @@ Note that several of the very cheap components have minimum orders. So your "sho
 
 ## Custom parts
 
-Custom parts to be laser-cut from MDF 5mm:
+Custom parts are to be laser-cut. Most from MDF 5mm, a few of other thicknesses. See the [PDF](assets/Lasercutting-v2020-04.pdf) for details.
 ![CAD model view](assets/CAD-1.png)
 ![Photo of parts](assets/lasercut-1.jpg)
-You can get these from the drawing called "Lasercutting" in the [Online Sandtrails CAD model](https://cad.onshape.com/documents/afebf73495f0c93b632a7935/w/49d3e6e5a3398459ea8f339a/e/fbf18bcbe909c6b736bb8e4c)
+You can also download the latest drawings form the tab called "Lasercutting" in the [Online Sandtrails CAD model](https://cad.onshape.com/documents/afebf73495f0c93b632a7935/w/49d3e6e5a3398459ea8f339a/e/fbf18bcbe909c6b736bb8e4c).
 
 
 ## Wiring
@@ -58,13 +58,14 @@ This can and will be improved in the future. So the following instructions do no
 Taken from [https://www.raspberrypi.org/](https://www.raspberrypi.org/documentation/usage/gpio/)
 
 Follow the pinout definition set in [axes.py](../axes.py)
-    # Axes Configuration: [Theta Axis, Rho Axis]
-    DIR = [5, 21]            # GPIO pin: Stepper motor set direction
-    STEP = [6, 20]           # GPIO pin: Stepper motor trigger step
-    MODE = [(26, 19, 13), (22, 27, 17)]   # GPIO pin: Stepper motor microstep resolution
-    HOME = [25, 24, 23]       # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
-    ENABLE = [16, 12]         # GPIO pin number for enabling stepper motors [THETA, RHO]
-
+```python
+# Axes Configuration: [Theta Axis, Rho Axis]
+DIR = [5, 21]            # GPIO pin: Stepper motor set direction
+STEP = [6, 20]           # GPIO pin: Stepper motor trigger step
+MODE = [(26, 19, 13), (22, 27, 17)]   # GPIO pin: Stepper motor microstep resolution
+HOME = [25, 24, 23]       # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
+ENABLE = [16, 12]         # GPIO pin number for enabling stepper motors [THETA, RHO]
+```
 To clarify: The numbers refer to the GPIO pin number in "BCM" mode ("Broadcom SOC channel").
 
 ### Stepper motor driver DRV8825
