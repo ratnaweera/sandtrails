@@ -1,11 +1,14 @@
 # Sandtrails Polar Sand table
 
-This is to get you started on building your own sand plotter. Some pictures of what this could look like in [gallery](gallery)
-[![Sandtable](assets/table.jpg)](gallery)
-
 This project and it's documentation is very much work-in-progress.
 
-If you have ideas, questions or want to help, head over to the [V1 Engineering Forum](https://forum.v1engineering.com/t/sandtrails-a-polar-sand-table/16844). See you there!
+If you have ideas, questions or want to help, head over to the [V1 Engineering Forum](https://forum.v1engineering.com/t/sandtrails-a-polar-sand-table/16844).
+
+This is to get you started on building your own sand plotter. For more pictures of what this could look like, see [gallery](gallery).
+
+[![Sandtable](assets/table.jpg)](gallery)
+
+
 
 ## Major todos
 - Integrate LED right light
