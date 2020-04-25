@@ -3,6 +3,14 @@
 This is to get you started on building your own sand plotter. Some pictures of what this could look like in [gallery](gallery)
 [![Sandtable](assets/table.jpg)](gallery)
 
+This project and it's documentation is very much work-in-progress.
+
+If you have ideas, questions or want to help, head over to the [V1 Engineering Forum](https://forum.v1engineering.com/t/sandtrails-a-polar-sand-table/16844). See you there!
+
+## Major todos
+- Integrate LED right light
+- Drastically improve wiring using a perma-proto hat for the Raspberry Pi.
+
 ## Off-the-shelf parts
 
 The following are the parts we used. Feel free to adapt as you see fit.

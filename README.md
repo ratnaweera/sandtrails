@@ -10,7 +10,7 @@ Thanks to Jeff Eberl's amazing pattern generator [Sandify](https://sandify.org/)
 
 ## Links and References for Building
 
-[V1 engineering](https://forum.v1engineering.com/t/does-this-count-as-a-build/6037)
+[V1 engineering](https://forum.v1engineering.com/t/sandtrails-a-polar-sand-table/16844)
 
 [Blog by Rob Dobson](https://robdobson.com/2017/02/a-line-in-the-sand/)
 
