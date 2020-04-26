@@ -21,7 +21,7 @@ The following are the parts we used. Feel free to adapt as you see fit.
 | Part description     |  Part name |  Supplier   | Approx. cost  |
 | ------------- |-------------| -------------|-----:|
 | Raspberry pi  | Rasbperry Pi 2 B   | [Pi-Shop.ch](https://www.pi-shop.ch/raspberry-pi-2-model-b-v1-2-1-gb-ram) | 40 USD |
-| Stepper motor | 11HS20-0674S     | [Stepper Online](https://www.omc-stepperonline.com/nema-11-stepper-motor/nema-11-bipolar-1-8deg-12ncm-17oz-in-0-67a-6-2v-28x28x51mm-4-wires.html)      |   2x 15 USD |
+| Motor nema 11 | 11HS20-0674S     | [Stepper Online](https://www.omc-stepperonline.com/nema-11-stepper-motor/nema-11-bipolar-1-8deg-12ncm-17oz-in-0-67a-6-2v-28x28x51mm-4-wires.html)      |   2x 15 USD |
 | Proto-board | Perma-proto hat |  [Adafruit](https://www.adafruit.com/product/2314)  |    8 USD |
 | Stepper motor driver     |  DRV8825 |  [Pololu](https://www.pololu.com/product/2133)   | 2 x 8 USD  |
 | Homing sensor     | Hall sensor |  [RobotDyn](https://robotdyn.com/hall-magnetic-sensor-with-analog-digital-outs.html)   | 3x 1 USD  |
