@@ -1,5 +1,7 @@
 # Sandtrails Polar Sand table
 
+[![Screenshot Sandtrails video](assets/Sandtrails-still-status-2020-04-26.png)](https://vimeo.com/411987751 "Sandtrails video April 26 2020")
+
 This project and it's documentation is very much work-in-progress.
 
 If you have ideas, questions or want to help, head over to the [V1 Engineering Forum](https://forum.v1engineering.com/t/sandtrails-a-polar-sand-table/16844).
