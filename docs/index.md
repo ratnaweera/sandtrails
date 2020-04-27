@@ -1,12 +1,12 @@
-# Sandtrails Polar Sand table
+# Sandtrails Documentation Page
 
 [![Screenshot Sandtrails video](assets/Sandtrails-still-status-2020-04-26.png)](https://vimeo.com/411987751 "Sandtrails video April 26 2020")
 
-This project and it's documentation is very much work-in-progress.
+This project and its documentation is very much work-in-progress.
 
 If you have ideas, questions or want to help, head over to the [V1 Engineering Forum](https://forum.v1engineering.com/t/sandtrails-a-polar-sand-table/16844).
 
-This is to get you started on building your own sand plotter. For more pictures of what this could look like, see [gallery](gallery).
+These instructions should get you started on building your own sand plotter. For more pictures of what this could look like, see [gallery](gallery).
 
 [![Sandtable](assets/table.jpg)](gallery)
 
