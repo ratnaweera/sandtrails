@@ -18,9 +18,9 @@ GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear R
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 
 # Rho Axis
-RH_MAX = 150             # Maximum value for RHO axis in [mm]
+RH_MAX = 176             # Maximum value for RHO axis in [mm]
 RH_MIN = -2              # Minimum value for RHO axis in [mm]
-RH_HOME_SENSOR_POS = 170 # RHO axis position when home switch of RHO is activated [mm]
+RH_HOME_SENSOR_POS = 176 # RHO axis position when home switch of RHO is activated [mm]
                          # This is a parameter that has to be tuned depending on physical mounting and sensor sensitivity.
                          # To tune: Mark desired axis 0 position on rho axis and linear guide.
                          # Extend RHO until the sensor triggers. Measure distance from 0 to this mark im mm. Adjust here.
@@ -94,7 +94,6 @@ def cleanup():
     GPIO.cleanup()
     logging.debug("GPIO.cleanup() performed")
     
-
 class thetarho:
     def __init__(self):
         self.curPos = [0.0, 0.0]       # [rad mm]      current position
