@@ -92,6 +92,7 @@ def steppers_disable():
 
 def cleanup():
     GPIO.cleanup()
+    logging.debug("GPIO.cleanup() performed")
     
 class thetarho:
     def __init__(self):
