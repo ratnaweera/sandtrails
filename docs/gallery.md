@@ -3,6 +3,10 @@
 Some impressions of patterns and the build.
 All created using [sandify.org](https://sandify.org/)
 
+![Fractal pattern](assets/gallery/IMG_20200429_233422.jpg)
+
+![Spiral pattern](assets/gallery/IMG_20200430_104537.jpg)
+
 ![Text pattern](assets/gallery/IMG_20200422_170820.jpg)
 
 ![Spiral pattern](assets/gallery/IMG_20200423_144704.jpg)

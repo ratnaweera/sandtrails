@@ -93,6 +93,7 @@ Taken from [https://www.rototron.info/](https://www.rototron.info/raspberry-pi-s
 Lead colours of the stepper motors:
 
 ![Stepper motor leads](assets/datasheets/Stepper-11HS20-0674S.png)
+
 Taken from [https://www.omc-stepperonline.com](https://www.omc-stepperonline.com/nema-11-stepper-motor/nema-11-bipolar-1-8deg-12ncm-17oz-in-0-67a-6-2v-28x28x51mm-4-wires.html)
 
 PDF including specs under [assets/datasheets/Stepper-11HS20-0674S.pdf](assets/datasheets/Stepper-11HS20-0674S.pdf)
