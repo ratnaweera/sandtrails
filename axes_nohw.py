@@ -44,6 +44,22 @@ def cleanup():
 
 def sleep(millis):
     pass
+
+def steppers_enable():
+    sleep(0.003) #DRV8825 takes 1.7ms to wake up
+    logging.debug("Enabled stepper motors (output enable = True)")
+
+def steppers_disable():
+    sleep(0.003) #DRV8825 takes 1.7ms to wake up. Assuming similar to go to sleep.
+    logging.debug("Disabled stepper motors (output enable = False)")
+
+def cleanup():
+    logging.debug("GPIO.cleanup() performed")
+    
+class thetarho:
+    def __init__(self):
+        self.curPos = [0.0, 0.0]       # [rad mm]      current position
+        self.curSteps = [0, 0]         # [steps steps] current position
     
 class thetarho:
     def __init__(self):
