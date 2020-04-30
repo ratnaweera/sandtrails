@@ -77,17 +77,7 @@ class Hardware:
             logging.error("Exception occured: " + str(err))
         finally:
             # shut down cleanly
-            try: # drive axes to zero
-                logging.info("Going back home")
-                thetarho.stripTheta()
-                axes.steppers_enable()
-                thetarho.goTo([0, 0])
-                axes.steppers_disable()
-            except Exception as error2:
-                logging.error("Exception occured: " + str(error2))
-                logging.error("Could not drive axes back to zero. Careful on next run, might hit physical limits")
-            finally:
-                axes.cleanup()
-                logging.debug("GPIO cleanup performed")
-                logging.info("Sandtrails ended. Press Ctrl+C to quit app.")
+            axes.steppers_disable()
+            axes.cleanup()
+            logging.info("Sandtrails ended. Press Ctrl+C to quit app.")
 
