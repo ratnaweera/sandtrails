@@ -115,7 +115,7 @@ def get_dynamic_fields():
 if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
     dateFormat = "%H:%H:%S"
-    logging.basicConfig(filename='sandtrails.log', level=logging.DEBUG, format=msgFormat, datefmt=dateFormat)
+    logging.basicConfig(filename='sandtrails.log', level=logging.INFO, format=msgFormat, datefmt=dateFormat)
     #logging.basicConfig(level=logging.DEBUG, format=msgFormat, datefmt=dateFormat)
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")

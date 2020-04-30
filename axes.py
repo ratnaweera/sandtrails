@@ -139,8 +139,9 @@ class thetarho:
 
     # Move axes to reach dest position
     def goTo(self, dest):    # destination position [in rad and mm]
-        if (dest[1] < RH_MIN) or (dest[1] > RH_MAX and (self.runState != runState['HOMING_F'])):
-            logging.error("Target violates RHO axis limits")
+        if (dest[1] < RH_MIN and (self.runState != runState['HOMING_E'])) or \
+                (dest[1] > RH_MAX and (self.runState != runState['HOMING_F'])):
+            logging.error("Target violates RHO axis limits (goTo " + str(dest) + ")")
             return -1
         elif (self.withinTolerance(dest)):
                 logging.info("Already at target position " + str(self.tarPos))
