@@ -59,11 +59,12 @@ You can also download the latest drawings form the tab called "Lasercutting" in 
 
 ## Wiring
 
-For now, wiring is done via a [GPIO T-cobbler](https://www.adafruit.com/product/2028) on a full size [solderless breadboard](https://www.adafruit.com/product/239).
+Unfortunately, the documentation of the wiring is somewhat incomplete. Please refer to the following two images. If interested, please ask for details.
 
-![Wiring overview](assets/wiring-1.jpg)
+![Wiring overview](assets/wiring-2.jpg)
 
-This can and will be improved in the future. So the following instructions do not go into detail since this will be changing soon anyway.
+![Incomplete schematics](assets/wiring-3.png)
+
 
 ### Raspberry GPIO pinout
 
