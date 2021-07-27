@@ -13,7 +13,7 @@ DIR = [7, 4]            # GPIO pin: Stepper motor set direction
 STEP = [5, 17]           # GPIO pin: Stepper motor trigger step
 MODE = [(19, 16, 13), (24, 23, 22)]   # GPIO pin: Stepper motor microstep resolution
 HOME = [3, 14, 2]       # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
-ENABLE = [20, 25]         # GPIO pin number for enabling stepper motors [THETA, RHO]
+DISABLE = [20, 25]         # GPIO pin number for disabling stepper motors [THETA, RHO]
 GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 
@@ -70,8 +70,8 @@ def setup_steppermotors():
     GPIO.output(MODE[1], RESOLUTION['1/32'])
 
     #Enable / disable pins
-    GPIO.setup(ENABLE[0], GPIO.OUT)
-    GPIO.setup(ENABLE[1], GPIO.OUT)
+    GPIO.setup(DISABLE[0], GPIO.OUT)
+    GPIO.setup(DISABLE[1], GPIO.OUT)
     steppers_disable()
 
 def homing_switch_states():
@@ -79,16 +79,16 @@ def homing_switch_states():
 
 
 def steppers_enable():
-    GPIO.output(ENABLE[0], True)
-    GPIO.output(ENABLE[1], True)
+    GPIO.output(DISABLE[0], False)
+    GPIO.output(DISABLE[1], False)
     sleep(0.003) #DRV8825 takes 1.7ms to wake up
-    logging.debug("Enabled stepper motors (output enable = True)")
+    logging.debug("Enabled stepper motors (output disable = False)")
 
 def steppers_disable():
-    GPIO.output(ENABLE[0], False)
-    GPIO.output(ENABLE[1], False)
+    GPIO.output(DISABLE[0], True)
+    GPIO.output(DISABLE[1], True)
     sleep(0.003) #DRV8825 takes 1.7ms to wake up. Assuming similar to go to sleep.
-    logging.debug("Disabled stepper motors (output enable = False)")
+    logging.debug("Disabled stepper motors (output disable = False)")
 
 def cleanup():
     GPIO.cleanup()
@@ -148,7 +148,7 @@ class thetarho:
                 return 0
         else:
             #Enable stepper motors if they are not already
-            if (not GPIO.input(ENABLE[0])) or (not GPIO.input(ENABLE[1])):
+            if (GPIO.input(DISABLE[0])) or (GPIO.input(DISABLE[1])):
                 logging.warn("Steppers not yet enabled, enabling...")
                 steppers_enable()
 

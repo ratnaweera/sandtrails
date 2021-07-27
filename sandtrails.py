@@ -98,6 +98,7 @@ def upload():
 def set_lighting():
     newcolors = list(filter(None, request.form['newcolors'].split(';')))
     logging.info('Request to set lighting: ' + str(newcolors))
+    flash('Setting lighting')
     sectionList = list()
     for color in newcolors:
         section = Section.fromHex(color)
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
     dateFormat = "%H:%H:%S"
     logging.basicConfig(filename='sandtrails.log', level=logging.INFO, format=msgFormat, datefmt=dateFormat)
-    #logging.basicConfig(level=logging.DEBUG, format=msgFormat, datefmt=dateFormat)
+    #logging.basicConfig(level=logging.INFO, format=msgFormat, datefmt=dateFormat)
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")
     else:

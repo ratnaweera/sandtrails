@@ -76,7 +76,7 @@ class Lighting:
  
 if __name__ == "__main__":
 
-    leds = Leds(25)
+    leds = Leds(46)
     lighting = Lighting(leds)
     lighting.init()
     
