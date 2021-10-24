@@ -2,6 +2,7 @@
 import logging
 import sys
 import threading
+from datetime import datetime
 
 # Imports for Flask
 from flask import Flask, render_template, flash, redirect, request, jsonify
@@ -115,8 +116,9 @@ def get_dynamic_fields():
 # Starting the hardware controller loop in a new thread, then run the web server in this thread
 if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
-    dateFormat = "%H:%H:%S"
-    logging.basicConfig(filename='sandtrails.log', level=logging.INFO, format=msgFormat, datefmt=dateFormat)
+    dateFormat = "%Y-%m-%d %H:%H:%S"
+    nameFormat = 'sandtrails-{:%Y-%m-%d}.log'.format(datetime.now())
+    logging.basicConfig(filename=nameFormat, level=logging.INFO, format=msgFormat, datefmt=dateFormat)
     #logging.basicConfig(level=logging.INFO, format=msgFormat, datefmt=dateFormat)
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")
