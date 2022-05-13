@@ -22,7 +22,7 @@ except:
 tracks = Tracks("tracks")
 playlist = Playlist()
 hardware = Hardware(tracks, playlist)
-ledHw = Leds(64)
+ledHw = Leds(46)
 ledConfig = Lighting(ledHw)
 
 event_start = threading.Event()
