@@ -2,15 +2,17 @@ import logging
 #import axes_nohw as axes
 import axes
 from time import sleep
+from time import perf_counter
 
 from playlist import Status
+
+dimLEDTimer = 5*60  # Timeout for dimming LED lights (seconds)
 
 class Hardware:
     
     def __init__(self, tracks, playlist):
         self.tracks = tracks
         self.playlist = playlist
-    
     
     def run(self, eStart, eStop, eShutdown):
         logging.info("Starting sandtrails ")
@@ -21,11 +23,16 @@ class Hardware:
             thetarho = axes.thetarho()
             thetarho.homing()
             
+            lastActive = perf_counter() 
             logging.info("Waiting for START")
             
             while not eShutdown.isSet():
-                #logging.debug("Still waiting for START")
+                #logging.debug("Waiting for START")
                 sleep(1)
+                if perf_counter() - lastActive > dimLEDTimer:
+                    logging.info("Now would be the time to dim the lights")
+                    lastActive = perf_counter() 
+
                 if eStart.isSet():
                     eStart.clear() #clear the event, not sure if this works as intended
                     
@@ -54,9 +61,11 @@ class Hardware:
             
                             if eStop.isSet():
                                 logging.info("Stop signal set, exiting playlist")
+                                lastActive = perf_counter() 
                                 break
         
                         logging.info("Playlist done!")
+                        lastActive = perf_counter() 
                         axes.steppers_disable()
                         
                         if eStop.isSet():
@@ -70,6 +79,7 @@ class Hardware:
                     
                     
                     self.playlist.set_status(Status.stopped)
+                    lastActive = perf_counter() 
     
                     
             logging.info("Main loop shutting down")
