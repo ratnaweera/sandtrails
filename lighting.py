@@ -78,14 +78,18 @@ class Lighting:
  
 if __name__ == "__main__":
 
+    import time
+
     leds = Leds(46)
     lighting = Lighting(leds)
     lighting.init()
     
     #sectionList = (Section.fromRGB(255, 0, 0), Section.fromRGB(0, 255, 0), Section.fromRGB(255, 0, 255))
     sectionList = (Section.fromRGB(255, 0, 0), Section.fromRGB(0, 255, 0))
-    lighting.setSectionList(sectionList, True)
+    lighting.setSectionList(sectionList, False)
     lighting.update()
+    time.sleep(2)
+    lighting.hw.brightness_decrease(0.01, 1)
 
     lighting.finalize()
     
