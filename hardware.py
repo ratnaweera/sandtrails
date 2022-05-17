@@ -6,13 +6,14 @@ from time import perf_counter
 
 from playlist import Status
 
-dimLEDTimer = 5*60  # Timeout for dimming LED lights (seconds)
+dimLEDTimer = 10*60  # Timeout for dimming LED lights (seconds)
 
 class Hardware:
     
-    def __init__(self, tracks, playlist):
+    def __init__(self, tracks, playlist, lighting):
         self.tracks = tracks
         self.playlist = playlist
+        self.lighting = lighting
     
     def run(self, eStart, eStop, eShutdown):
         logging.info("Starting sandtrails ")
@@ -31,6 +32,7 @@ class Hardware:
                 sleep(1)
                 if perf_counter() - lastActive > dimLEDTimer:
                     logging.info("Now would be the time to dim the lights")
+                    self.lighting.hw.brightness_decrease(0.05, 1)
                     lastActive = perf_counter() 
 
                 if eStart.isSet():

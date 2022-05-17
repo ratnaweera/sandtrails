@@ -88,7 +88,7 @@ def steppers_disable():
     GPIO.output(DISABLE[0], True)
     GPIO.output(DISABLE[1], True)
     sleep(0.003) #DRV8825 takes 1.7ms to wake up. Assuming similar to go to sleep.
-    logging.debug("Disabled stepper motors (output disable = False)")
+    logging.debug("Disabled stepper motors (output disable = True)")
 
 def cleanup():
     GPIO.cleanup()

@@ -21,9 +21,9 @@ except:
 # Initializations
 tracks = Tracks("tracks")
 playlist = Playlist()
-hardware = Hardware(tracks, playlist)
 ledHw = Leds(46)
 ledConfig = Lighting(ledHw)
+hardware = Hardware(tracks, playlist, ledConfig)
 
 event_start = threading.Event()
 event_stop = threading.Event()
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     dateFormat = "%Y-%m-%d %H:%H:%S"
     nameFormat = 'sandtrails-{:%Y-%m-%d}.log'.format(datetime.now())
     logging.basicConfig(filename=nameFormat, level=logging.INFO, format=msgFormat, datefmt=dateFormat)
-    #logging.basicConfig(level=logging.INFO, format=msgFormat, datefmt=dateFormat)
+    #logging.basicConfig(level=logging.DEBUG, format=msgFormat, datefmt=dateFormat)
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")
     else:
