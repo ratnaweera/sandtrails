@@ -30,6 +30,9 @@ class Leds:
         rl, gl, bl = Leds.adjustBrightness(r, g, b, BRIGHTNESS_REDUCTION)
         logging.info("Set LED " + str(i) + ": " + str((rl, gl, bl)))
 
+    def brightness_decrease(self, wait=0.01, step=1):
+        logging.info('LED simulator: Brightness decrease')
+
     @staticmethod
     def clampRGB(r, g, b):
         return (clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255))
