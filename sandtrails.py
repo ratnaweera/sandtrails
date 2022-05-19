@@ -3,6 +3,7 @@ import logging
 import sys
 import threading
 from datetime import datetime
+from subprocess import call     # to shut down raspi
 
 # Imports for Flask
 from flask import Flask, render_template, flash, redirect, request, jsonify
@@ -27,7 +28,7 @@ hardware = Hardware(tracks, playlist, ledConfig)
 
 event_start = threading.Event()
 event_stop = threading.Event()
-event_shutdown = threading.Event()
+event_exit = threading.Event()
 
 # Creating the web server
 app = Flask(__name__, template_folder=".", static_folder="assets")
@@ -48,13 +49,18 @@ def status():
     #logging.debug('Status is: ' + str(d))
     return jsonify(d)
 
-@app.route('/shutdown', methods=['GET'])
-def shutdown():
-    logging.info('Request to shutdown')
-    event_shutdown.set()
+@app.route('/exit', methods=['GET'])
+def exit():
+    logging.info('Request to exit sandtrails')
+    event_exit.set()
     event_start.clear()
     event_stop.clear()
     return render_template('index.html', **get_dynamic_fields())
+
+@app.route('/shutdown', methods=['GET'])
+def shutdown():
+    logging.info('Shutting down raspberry pi')
+    call("sudo shutdown -h now", shell=True)
 
 @app.route('/start', methods=['POST'])
 def start():
@@ -63,7 +69,7 @@ def start():
     logging.info('Request to start new playlist: ' + str(newplaylist) + ', looping = ' + str(newplaylist_looping))
     flash('Starting new playlist: ' + str(newplaylist))
     playlist.start_new(newplaylist, newplaylist_looping)
-    event_shutdown.clear()
+    event_exit.clear()
     event_start.set()
     event_stop.clear()
     return render_template('index.html', **get_dynamic_fields())
@@ -73,7 +79,7 @@ def stop():
     logging.info('Request to stop')
     flash('Stopping current track')
     playlist.stop()
-    event_shutdown.clear()
+    event_exit.clear()
     event_start.clear()
     event_stop.set()
     return render_template('index.html', **get_dynamic_fields())
@@ -117,16 +123,17 @@ def get_dynamic_fields():
 if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
     dateFormat = "%Y-%m-%d %H:%H:%S"
-    nameFormat = 'sandtrails-{:%Y-%m-%d}.log'.format(datetime.now())
+    nameFormat = 'logfile-sandtrails-{:%Y-%m-%d}.log'.format(datetime.now())
     logging.basicConfig(filename=nameFormat, level=logging.INFO, format=msgFormat, datefmt=dateFormat)
     #logging.basicConfig(level=logging.DEBUG, format=msgFormat, datefmt=dateFormat)
     if sys.version_info[0] < 3:
         logging.critical("Must use Python 3")
     else:
         ledConfig.init()
-        mainThread = threading.Thread(name='sandtrailsMain', target=hardware.run, args=(event_start, event_stop, event_shutdown))
+        mainThread = threading.Thread(name='sandtrailsMain', target=hardware.run, args=(event_start, event_stop, event_exit))
         mainThread.start()
         logging.info("Started main sandtrails thread.")
         app.run(debug=False, host='0.0.0.0')
+        # app.run will keep running, never reaching the next two lines:
         mainThread.join()
         logging.info("Exited cleanly")
