@@ -6,8 +6,10 @@ Blurring between the section's color can be enabled.
 """
 
 from color import Color
-from led_nohw import Leds
-
+try:  
+    from led import Leds
+except:
+    from led_nohw import Leds
 
 DEFAULT_COLOR = Color(0, 0, 0)
 
@@ -76,13 +78,18 @@ class Lighting:
  
 if __name__ == "__main__":
 
-    leds = Leds(25)
+    import time
+
+    leds = Leds(46)
     lighting = Lighting(leds)
     lighting.init()
     
-    sectionList = (Section.fromRGB(255, 0, 0), Section.fromRGB(0, 255, 0), Section.fromRGB(255, 0, 255))
-    lighting.setSectionList(sectionList, True)
+    #sectionList = (Section.fromRGB(255, 0, 0), Section.fromRGB(0, 255, 0), Section.fromRGB(255, 0, 255))
+    sectionList = (Section.fromRGB(255, 0, 0), Section.fromRGB(0, 255, 0))
+    lighting.setSectionList(sectionList, False)
     lighting.update()
+    time.sleep(2)
+    lighting.hw.brightness_decrease(0.01, 1)
 
     lighting.finalize()
     
