@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import logging
+import cfg
 import math
 from time import sleep
 
@@ -8,12 +9,12 @@ CCW = GPIO.HIGH          # Counterclockwise rotation
 SPR = 200*32             # Steps per revolution (NEMA = 200 steps/rev, microstepping 1/32)
 
 # Axes Configuration: [Theta Axis, Rho Axis]
-DIR = [7, 4]            # GPIO pin: Stepper motor set direction
-STEP = [5, 17]           # GPIO pin: Stepper motor trigger step
+DIR = [7, cfg.val['theta_dir_gpio']]  # GPIO pin: Stepper motor set direction
+STEP = [5, 17]                        # GPIO pin: Stepper motor trigger step
 MODE = [(19, 16, 13), (24, 23, 22)]   # GPIO pin: Stepper motor microstep resolution
-HOME = [3, 14, 2]       # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
-DISABLE = [20, 25]         # GPIO pin number for disabling stepper motors [THETA, RHO]
-GEAR = [28/600, 14]      # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
+HOME = [3, 14, 2]                     # GPIO pin number for homing switches [THETA 1, THETA 2, RHO]
+DISABLE = [20, 25]                    # GPIO pin number for disabling stepper motors [THETA, RHO]
+GEAR = [28/600, 14]                   # [Gear ratio of motor:THETA-axis, diameter spur gear RHO axis [mm]]
 TOL = [2*math.pi*GEAR[0]/SPR, math.pi*GEAR[1]/SPR]  # [rad, mm] tolerance when comparing two positions (1 step error)
 
 # Rho Axis

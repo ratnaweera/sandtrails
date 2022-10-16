@@ -2,3 +2,4 @@
 *.DS_Store
 tracks/*.thr
 *.log
+/private/**/*

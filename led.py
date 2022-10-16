@@ -4,6 +4,7 @@ This class deals with the hardware-specific aspects of the LEDs.
 
 import RPi.GPIO as GPIO
 import time
+import cfg
  
 # Import the WS2801 module.
 import Adafruit_WS2801
@@ -12,9 +13,6 @@ import Adafruit_GPIO.SPI as SPI
 # Alternatively specify a hardware SPI connection on /dev/spidev0.0:
 SPI_PORT   = 0
 SPI_DEVICE = 0
-
-# Scale all the color values. 1 = no reduction, 0 = dark
-BRIGHTNESS_REDUCTION = 1.0
 
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
@@ -36,7 +34,7 @@ class Leds:
         return self.pixels.count()
     
     def set(self, i, r, g, b):
-        rl, gl, bl = Leds.adjustBrightness(r, g, b, BRIGHTNESS_REDUCTION)
+        rl, gl, bl = Leds.adjustBrightness(r, g, b, cfg.val['led_brightness'])
         self.pixels.set_pixel(i, Adafruit_WS2801.RGB_to_color(rl, gl, bl))
 
     def brightness_decrease(self, wait=0.01, step=1):
@@ -68,7 +66,7 @@ if __name__ == "__main__":
     assert Leds.adjustBrightness(100, 200, 300, 0.5) == (50, 100, 150)
     assert Leds.adjustBrightness(100, 200, 300, 1.0) == (100, 200, 255)
 
-    led = Leds(46)
+    led = Leds(cfg.val['nr_of_leds'])
     led.init()
     led.set(0, 50, 0, 0)
     led.set(1, 0, 50, 0)

@@ -3,9 +3,7 @@ This class deals with the hardware-specific aspects of the LEDs.
 """
 
 import logging
-
-# Scale all the color values. 1 = no reduction, 0 = dark
-BRIGHTNESS_REDUCTION = 0.5
+import cfg
 
 
 def clamp(n, minn, maxn):
@@ -27,7 +25,7 @@ class Leds:
         return self.nrOfPixels
     
     def set(self, i, r, g, b):
-        rl, gl, bl = Leds.adjustBrightness(r, g, b, BRIGHTNESS_REDUCTION)
+        rl, gl, bl = Leds.adjustBrightness(r, g, b, cfg.val['led_brightness'])
         logging.info("Set LED " + str(i) + ": " + str((rl, gl, bl)))
 
     def brightness_decrease(self, wait=0.01, step=1):
@@ -51,7 +49,7 @@ if __name__ == "__main__":
     assert Leds.adjustBrightness(100, 200, 300, 0.5) == (50, 100, 150)
     assert Leds.adjustBrightness(100, 200, 300, 1.0) == (100, 200, 255)
 
-    led = Leds(64)
+    led = Leds(cfg.val['nr_of_leds'])
     led.init()
     led.set(0, 50, 0, 0)
     led.set(1, 0, 50, 0)

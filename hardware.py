@@ -16,7 +16,7 @@ class Hardware:
         self.lighting = lighting
     
     def run(self, eStart, eStop, eExit):
-        logging.info("Starting sandtrails ")
+        logging.info("Starting sandtrails hardware")
         try:
             axes.setup_steppermotors()
            
