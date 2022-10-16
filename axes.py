@@ -2,7 +2,6 @@ import RPi.GPIO as GPIO
 import logging
 import math
 from time import sleep
-from numpy import sign
 
 CW = GPIO.LOW            # Clockwise rotation
 CCW = GPIO.HIGH          # Counterclockwise rotation
@@ -149,7 +148,7 @@ class thetarho:
         else:
             #Enable stepper motors if they are not already
             if (GPIO.input(DISABLE[0])) or (GPIO.input(DISABLE[1])):
-                logging.warn("Steppers not yet enabled, enabling...")
+                logging.warning("Steppers not yet enabled, enabling...")
                 steppers_enable()
 
             # Set target position and convert to steps
@@ -331,7 +330,7 @@ class thetarho:
 
         ## Home THETA axis
         if self.runState != runState['INIT']:
-            logging.warn("Homing: Calling homing in the correct place? Entering homing run...")
+            logging.warning("Homing: Calling homing in the correct place? Entering homing run...")
 
         ### INIT
         #If THETA axis is already at home location, move CCW until both sensors are inactive

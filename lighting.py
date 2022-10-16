@@ -41,10 +41,10 @@ class Lighting:
         self.blur = False
     
     def init(self):
-        self.hw.init();
+        self.hw.init()
 
     def finalize(self):
-        self.hw.finalize();
+        self.hw.finalize()
         
     def setSectionList(self, sectionList, blur):
         self.list = sectionList

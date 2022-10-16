@@ -1,7 +1,5 @@
 import logging
 import math
-import time
-from numpy import sign
 
 SPR = 200*32             # Steps per revolution (NEMA = 200 steps/rev, microstepping 1/32)
 
@@ -39,9 +37,6 @@ def setup_steppermotors():
                   '1/16': (0, 0, 1),
                   '1/32': (1, 0, 1)}
 
-def cleanup():
-    pass
-
 def sleep(millis):
     pass
 
@@ -55,11 +50,6 @@ def steppers_disable():
 
 def cleanup():
     logging.debug("GPIO.cleanup() performed")
-    
-class thetarho:
-    def __init__(self):
-        self.curPos = [0.0, 0.0]       # [rad mm]      current position
-        self.curSteps = [0, 0]         # [steps steps] current position
     
 class thetarho:
     def __init__(self):
