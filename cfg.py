@@ -9,7 +9,8 @@ val = {
     "nr_of_leds": 46,
     "theta_dir_gpio": 4,
     "led_brightness": 1.0,  # 1.0 = no reduction, 0.0 = dark
-    "simulate_led_hw": False
+    "simulate_led_hw": False,
+    "simulate_axes_hw": False
 }
 
 
