@@ -203,4 +203,21 @@ class thetarho:
     
     # Find zero positions of stepper motors using hall switches
     def homing(self):
+        self.homingUsingCoordinates(0, 0, False)
+
+    # Define current coordinates using given inputs
+    def homingUsingCoordinates(self, initval_theta, initval_rho, goto_zero):
+
+        self.curPos = [initval_theta, initval_rho]
+        self.curSteps = self.convertPosToSteps(self.curPos)
+        logging.info("Homing: Set current position to " + self.curState())
+        sleep(1)
+
+        ### HOMED
         self.runState = HOMED
+        logging.info("Homing: Setting runState = HOMED")
+
+        if goto_zero:
+            self.goTo([0,0])
+
+        steppers_disable()

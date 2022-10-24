@@ -408,7 +408,13 @@ class thetarho:
             sleep(1)
             raise RuntimeError("HOMING_F: RHO homing sensor is inactive even after full extension by " + str(RH_HOME_SENSOR_POS+10) + "mm")
 
-        self.curPos = [0, RH_HOME_SENSOR_POS]
+        self.homingUsingCoordinates(0, RH_HOME_SENSOR_POS, True)
+
+
+    # Define current coordinates using given inputs
+    def homingUsingCoordinates(self, initval_theta, initval_rho, goto_zero):
+
+        self.curPos = [initval_theta, initval_rho]
         self.curSteps = self.convertPosToSteps(self.curPos)
         logging.info("Homing: Set current position to " + self.curState())
         sleep(1)
@@ -417,5 +423,8 @@ class thetarho:
         self.runState = runState['HOMED']
         logging.info("Homing: Setting runState = HOMED")
 
-        self.goTo([0,0])
+        if goto_zero:
+            self.goTo([0,0])
+
         steppers_disable()
+

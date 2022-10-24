@@ -23,10 +23,16 @@ class Hardware:
         logging.info("Starting sandtrails hardware")
         try:
             axes.setup_steppermotors()
-
             logging.info("Steppermotor set up")
+
             thetarho = axes.thetarho()
-            thetarho.homing()
+            if cfg.val["do_homing_on_startup"]:
+                thetarho.homing()
+            else:
+                initval_theta = 0
+                initval_rho = 0
+                logging.info("Skipping mechanical homing. Defining coordinates directly: " + str(initval_theta) + " " + str(initval_rho))
+                thetarho.homingUsingCoordinates(initval_theta, initval_rho, False)
 
             lastActive = perf_counter()
             logging.info("Waiting for START")
