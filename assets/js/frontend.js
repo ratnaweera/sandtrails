@@ -12,26 +12,27 @@ $(function(){
 	});
 });
 
-$("#startstop_button").on("click", function(){
-	var action = $("#startstop_button").text();
-	var list = "";
-	var loop = $("#loop_checkbox").prop("checked");
-	if (action == "Start"){
+const startStopButton = $("#startstop_button");
+startStopButton.on("click", function(){
+	const action = startStopButton.text();
+	let list = "";
+	const loop = $("#loop_checkbox").prop("checked");
+	if (action === "Start"){
 		$("#playlist").children("a").each(function(){
 			list = list + $(this).text() + ";";
 		});
-		if (list != "")
+		if (list !== "")
 		{
-			$("#startstop_button").text("Stop");
-			$.post("/start", {newplaylist: list, loop: loop}, function(data, result){
+			startStopButton.text("Stop");
+			$.post("/start", {newplaylist: list, loop: loop}, function(){
 				poll();
 			});
 		}
 	}
 	else {
-		$("#startstop_button").text("Start");
-		$("#startstop_button").prop( "disabled", true );
-		$.post("/stop", function(data, result){
+		startStopButton.text("Start");
+		startStopButton.prop( "disabled", true );
+		$.post("/stop", function(){
 			poll();
 		});
 	}
@@ -39,52 +40,64 @@ $("#startstop_button").on("click", function(){
 
 function poll() {
 	$.ajax({ url: "/status", success: function(data){
-			if (data.status == "stopped"){
-				$("#startstop_button").prop( "disabled", false );
-			}
-			var command = data.status == "running" ? "Stop" : "Start";
-			$("#startstop_button").text(command);
-		}, dataType: "json" })
+		if (data.status === "stopped"){
+			startStopButton.prop( "disabled", false );
+		}
+		const command = data.status === "running" ? "Stop" : "Start";
+		startStopButton.text(command);
+	}, dataType: "json" })
 
-		.done(function(data){
-			if (data.status != "stopped"){
-				setTimeout(function() {
-					poll();
-				}, 3000);
-			}
-		});
-};
+	.done(function(data){
+		if (data.status !== "stopped"){
+			setTimeout(function() {
+				poll();
+			}, 3000);
+		}
+	});
+}
 
 $( document ).ready(function() {
-		poll();
+	poll();
 });
 
 $("#file_upload").change(function(){
-		//alert("new file: " + this.files[0].name);
-		var form = document.getElementById("file_uploader_form");
-		form.submit();
+	const form = document.getElementById("file_uploader_form");
+	form.submit();
 });
 
 $(function(){
-	$("#add_ledsection").on("click", function(e){
-				var container = $("#ledsection_container");
-				var sections = container.children("div");
-				var newNr = sections.length + 1;
-				var newDiv = sections.last().clone();
-				newDiv.appendTo(container);
-				var label = newDiv.find("label").first();
-				label.text("LED Color " + newNr + ":");
-				var input = newDiv.find("input").first();
-				input.attr("name", "led_color" + newNr);
-		});
+	$("#add_ledsection").on("click", function(){
+		const container = $("#ledsection_container");
+		const sections = container.children("div");
+		const newNr = sections.length + 1;
+		const newDiv = sections.last().clone();
+		const label = newDiv.find("label").first();
+		label.prop("id", "colorpicker_label" + newNr);
+		label.prop("for", "colorpicker" + newNr);
+		label.text("LED Color " + newNr + ":");
+		const input = newDiv.find("input").first();
+		input.prop("id", "colorpicker" + newNr);
+		input.attr("name", "led_color" + newNr);
+		newDiv.appendTo(container);
+	});
+});
+
+$(function(){
+	$("#remove_ledsection").on("click", function(){
+		const container = $("#ledsection_container");
+		const sections = container.children("div");
+		if (sections.length > 1) {
+			sections.last().remove();
+		}
+	});
 });
 
 $("#light_button").on("click", function(){
-	var list = "";
+	let list = "";
 	$("#ledsection_container").find("input").each(function(){
 		list = list + $(this).val() + ";";
 	});
-	if (list != "")
+	if (list !== "")
 	{
 		$.post("/lighting", {newcolors: list}, function(data, result){
 		});

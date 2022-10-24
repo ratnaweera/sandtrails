@@ -102,10 +102,10 @@
 												{% for ledsection in ledsections %}
 												<div class="form-row">
 														<div class="col">
-															<label class="col-form-label" id="colorpicker_label" for="colorpicker">LED Color {{ledsection.nr}}:</label>
+															<label class="col-form-label colorpicker_label" id="colorpicker_label" for="colorpicker">LED Color {{ledsection.nr}}:</label>
 														</div>
 														<div class="col-1 align-self-center">
-															<input type="color" id="colorpicker" name="led_color{{ledsection.nr}}" value="{{ledsection.color}}">
+															<input type="color" class="colorpicker" id="colorpicker" name="led_color{{ledsection.nr}}" value="{{ledsection.color}}">
 														</div>
 												</div>
 												{% endfor %}
@@ -115,7 +115,8 @@
 								<div class="form-row">
 										<div class="col text-center" style="margin: 20px;">
 											<button id="add_ledsection" class="btn btn-dark btn-sm" type="button">+ add color</button>
-										</div>
+											<button id="remove_ledsection" class="btn btn-dark btn-sm" type="button">- remove</button>
+ 										</div>
 								</div>
             </div>
         </div>

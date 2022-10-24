@@ -47,17 +47,17 @@ h3 {
   margin-right: 5px;
 }
 
-#colorpicker_label {
+.colorpicker_label {
   float: right;
 }
 
-#colorpicker {
+.colorpicker {
   border-style: none;
   padding: 0;
   width: 2rem;
   height: 2rem;
   outline-style: none;
-  outline-width: 0px;
+  outline-width: 0;
   margin-left: 0;
   margin-right: 0;
   margin-top: 0.1rem;
