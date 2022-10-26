@@ -54,7 +54,7 @@ def status():
     return jsonify(d)
 
 
-@app.route('/exit', methods=['GET'])
+@app.route('/exit', methods=['POST'])
 def exit():
     logging.info('Request to exit sandtrails')
     event_exit.set()
@@ -63,7 +63,7 @@ def exit():
     return render_template('index.html', **get_dynamic_fields())
 
 
-@app.route('/shutdown', methods=['GET'])
+@app.route('/shutdown', methods=['POST'])
 def shutdown():
     logging.info('Shutting down raspberry pi')
     call("sudo shutdown -h now", shell=True)
