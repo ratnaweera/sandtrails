@@ -3,3 +3,4 @@
 tracks/*.thr
 *.log
 /private/**/*
+.idea/**/*

@@ -134,7 +134,7 @@ def get_dynamic_fields():
 if __name__ == '__main__':
     msgFormat = "%(asctime)s: %(levelname)s: %(message)s"
     dateFormat = "%Y-%m-%d %H:%M:%S"
-    nameFormat = 'logfile-sandtrails-{:%Y-%m-%d}.log'.format(datetime.now())
+    nameFormat = 'logs/logfile-sandtrails-{:%Y-%m-%d}.log'.format(datetime.now())
     logging.basicConfig(filename=nameFormat, level=logging.INFO, format=msgFormat, datefmt=dateFormat)
     logging.info("---------------------------------------------------------------")
     # logging.basicConfig(level=logging.DEBUG, format=msgFormat, datefmt=dateFormat)
