@@ -120,12 +120,12 @@
                     {% for ledsection in ledsections %}
                     <div class="form-row">
                         <div class="col">
-                            <label class="col-form-label colorpicker_label" id="colorpicker_label" for="colorpicker">
-                                LED Color {{ledsection.nr}}:
+                            <label class="col-form-label colorpicker_label" id="colorpicker_label{{loop.index}}" for="colorpicker{{loop.index}}">
+                                LED Color {{loop.index}}:
                             </label>
                         </div>
                         <div class="col-1 align-self-center">
-                            <input type="color" class="colorpicker" id="colorpicker" name="led_color{{ledsection.nr}}"
+                            <input type="color" class="colorpicker" id="colorpicker{{loop.index}}" name="led_color{{loop.index}}"
                                    value="{{ledsection.color}}">
                         </div>
                     </div>
