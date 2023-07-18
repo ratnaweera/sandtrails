@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cabin:700">
     <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/toastr.min.css"/>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
@@ -61,9 +62,9 @@
                     <div class="row">
                         <div class="col custom-file" id="file_uploader">
                             <form id="file_uploader_form" method="POST" action="/upload" enctype="multipart/form-data">
-                                <label id="file_upload_label" class="custom-file-label" for="file_upload">Upload
-                                    file...</label><input type="file" id="file_upload" class="custom-file-input"
-                                                          name="file"></form>
+                                <label id="file_upload_label" class="custom-file-label" for="file_upload">Upload file...</label>
+                                <input type="file" id="file_upload" class="custom-file-input" name="file">
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -93,20 +94,6 @@
                     <button class="btn btn-primary btn-lg btn-default" id="startstop_button" type="button">-</button>
                 </div>
             </div>
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            <div class="row">
-                <div class="col" id="messages">
-                    <h3>Messages</h3>
-                    <ul class="fancy_list">
-                        {% for message in messages %}
-                        <li>{{ message }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            {% endif %}
-            {% endwith %}
         </div>
     </div>
 </section>
@@ -156,6 +143,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
 <script src="assets/js/grayscale.js"></script>
 <script src="assets/js/frontend.js"></script>
+<script src="assets/js/toastr.min.js"></script>
 </body>
 
 </html>

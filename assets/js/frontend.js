@@ -1,13 +1,13 @@
 $(function () {
     $("#playlist").on("click", "a", function (e) {
-        e.preventDefault(); //stops the link from doing it's normal thing
+        e.preventDefault();
         e.target.parentNode.removeChild(e.target);
     });
 });
 
 $(function () {
     $("#tracks_list").on("click", "a", function (e) {
-        e.preventDefault(); //stops the link from doing it's normal thing
+        e.preventDefault();
         document.getElementById("playlist").appendChild(e.target.cloneNode(true));
     });
 });
@@ -23,24 +23,28 @@ startStopButton.on("click", function () {
         });
         if (list !== "") {
             startStopButton.text("Stop");
-            $.post("/start", {newplaylist: list, loop: loop}, function () {
+            $.post("/start", {newplaylist: list, loop: loop}, function (data) {
+                feedback(data.message);
                 poll();
             });
         }
     } else {
         startStopButton.text("Start");
         startStopButton.prop("disabled", true);
-        $.post("/stop", function () {
-            poll();
+        $.post("/stop", function (data) {
+            feedback(data.message);
         });
     }
 });
 
-function poll() {
+function poll(silent= false) {
     $.ajax({
         url: "/status", success: function (data) {
             if (data.status === "stopped") {
                 startStopButton.prop("disabled", false);
+                if (!silent) {
+                    feedback("Playlist stopped");
+                }
             }
             const command = data.status === "running" ? "Stop" : "Start";
             startStopButton.text(command);
@@ -55,12 +59,23 @@ function poll() {
 }
 
 $(document).ready(function () {
-    poll();
+    poll(true);
 });
 
 $("#file_upload").change(function () {
-    const form = document.getElementById("file_uploader_form");
-    form.submit();
+    const form = $('#file_uploader_form');
+    const actionUrl = form.attr('action');
+    const data = new FormData($("#file_uploader_form")[0]);
+
+    $.ajax({
+        type: "POST",
+        url: actionUrl,
+        data: data,
+        processData: false,
+        contentType: false
+    }).always(function (data) {
+        feedback(data.message);
+    });
 });
 
 $(function () {
@@ -96,15 +111,25 @@ $("#light_button").on("click", function () {
         list = list + $(this).val() + ";";
     });
     if (list !== "") {
-        $.post("/lighting", {newcolors: list}, function (data, result) {
+        $.post("/lighting", {newcolors: list}, function (data) {
+            feedback(data.message);
         });
     }
 });
 
+function feedback(message) {
+    toastr.options.positionClass = 'toast-bottom-right'
+    toastr.info(message);
+}
+
 function shutdown() {
-    $.post("shutdown", {});
+    $.post("shutdown", {}, function (data) {
+        feedback(data.message);
+    });
 }
 
 function exit() {
-    $.post("exit", {});
+    $.post("exit", {}, function (data) {
+        feedback(data.message);
+    });
 }

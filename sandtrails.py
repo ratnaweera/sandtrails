@@ -6,7 +6,7 @@ from datetime import datetime
 from subprocess import call  # to shut down raspi
 
 # Imports for Flask
-from flask import Flask, render_template, flash, redirect, request, jsonify
+from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 
 # Import of own classes
@@ -60,13 +60,14 @@ def exit():
     event_exit.set()
     event_start.clear()
     event_stop.clear()
-    return render_template('index.html', **get_dynamic_fields())
+    return jsonify(dict(message='Exited sandtrails!'))
 
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
-    logging.info('Shutting down raspberry pi')
+    logging.info('Request to shut down raspberry pi')
     call("sudo shutdown -h now", shell=True)
+    return jsonify(dict(message='Shutting down rasperry pi...'))
 
 
 @app.route('/start', methods=['POST'])
@@ -74,60 +75,52 @@ def start():
     newplaylist = list(filter(None, request.form['newplaylist'].split(';')))
     newplaylist_looping = request.form['loop'].lower() == "true"
     logging.info('Request to start new playlist: ' + str(newplaylist) + ', looping = ' + str(newplaylist_looping))
-    flash('Starting new playlist: ' + str(newplaylist))
     playlist.start_new(newplaylist, newplaylist_looping)
     event_exit.clear()
     event_start.set()
     event_stop.clear()
-    return render_template('index.html', **get_dynamic_fields())
+    return jsonify(dict(message='Started new playlist: ' + str(newplaylist)))
 
 
 @app.route('/stop', methods=['POST'])
 def stop():
     logging.info('Request to stop')
-    flash('Stopping current track')
     playlist.stop()
     event_exit.clear()
     event_start.clear()
     event_stop.set()
-    return render_template('index.html', **get_dynamic_fields())
+    return jsonify(dict(message='Stopping playlist...'))
 
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    logging.info('File upload request')
-    flash('Uploading file')
+    logging.info('Request to upload file')
     # check if the post request has the file part
     if 'file' not in request.files:
-        flash('No file part')
-        return redirect(request.url)
+        return jsonify(dict(message='Error: No file part!'))
     file = request.files['file']
     # if user does not select a file, the browser might also submit an empty part without filename
     if file.filename == '':
-        flash('No selected file')
-        return redirect(request.url)
+        return jsonify(dict(message='Error: No selected file!'))
     if file:
         tracks.store(file, secure_filename(file.filename))
-    return render_template('index.html', **get_dynamic_fields())
+    return jsonify(dict(message='Uploaded file successfully!'))
 
 
 @app.route('/lighting', methods=['POST'])
 def set_lighting():
     newcolors = list(filter(None, request.form['newcolors'].split(';')))
     logging.info('Request to set lighting: ' + str(newcolors))
-    flash('Setting lighting')
     sectionList = list()
     for color in newcolors:
         section = Section.fromHex(color)
         sectionList.append(section)
     ledConfig.setSectionList(sectionList, True)
-    return render_template('index.html', **get_dynamic_fields())
+    return jsonify(dict(message='Lighting set!'))
 
 
 def get_dynamic_fields():
-    sections = ledConfig.getSectionList()
-    d = dict(tracks=tracks.list(), ledsections=sections)
-    return d
+    return dict(tracks=tracks.list(), ledsections=ledConfig.getSectionList())
 
 
 # Starting the hardware controller loop in a new thread, then run the web server in this thread
